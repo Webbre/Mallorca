@@ -106,7 +106,6 @@ const haalWeerOp = async () => {
     
     if (dataForecast.list) {
       const middagVoorspellingen = dataForecast.list.filter((item: any) => item.dt_txt.includes('12:00:00'));
-      // Aangepast van 3 naar 5 items
       voorspelling.value = middagVoorspellingen.slice(0, 5).map((item: any) => {
         const datum = new Date(item.dt * 1000);
         const dagNaam = datum.toLocaleDateString('nl-NL', { weekday: 'long' });
@@ -139,7 +138,9 @@ const laadtGids = ref(true);
 const dagschema = ref<any[]>([]);
 const laadtSchema = ref(true);
 
-// De standaard data voor de gids (inclusief nieuwe categorieën)
+const gedeeldeNotitie = ref('');
+const isAanHetOpslaan = ref(false);
+
 const standaardGids = [
   { id: 1, categorie: 'Strand & snorkelen', naam: 'Cala Gat', reistijd: '5 min lopen', eigenschap: 'Klein, rustig, geweldig om te snorkelen', icoon: '🤿' },
   { id: 2, categorie: 'Strand & snorkelen', naam: 'Cala Lliteras', reistijd: '10 min lopen', eigenschap: 'Kleine rotsbaai, prachtig water', icoon: '🐟' },
@@ -147,7 +148,6 @@ const standaardGids = [
   { id: 4, categorie: 'Eten & drinken', naam: 'Voorbeeld Restaurant', reistijd: '15 min', eigenschap: 'Lekkere tapas aan zee', icoon: '🥘' }
 ];
 
-// De standaard data voor het dagschema (Aangepaste titels)
 const standaardDagschema = [
   { id: 1, datum: 'Woensdag 8 juli 2026', titel: 'Woensdag 8 juli', activiteiten: [ { id: 101, tijd: '08:30', omschrijving: 'Vertrek auto Haren', icoon: '🚗', geselecteerd: false, voltooid: false }, { id: 102, tijd: '10:30', omschrijving: 'Aankomst FMO', icoon: '🅿️', geselecteerd: false, voltooid: false }, { id: 103, tijd: '12:50', omschrijving: 'Vlucht FR7386', icoon: '✈️', geselecteerd: false, voltooid: false }, { id: 104, tijd: '15:10', omschrijving: 'Aankomst Palma', icoon: '🛬', geselecteerd: false, voltooid: false }, { id: 105, tijd: '16:00', omschrijving: 'Huurauto ophalen', icoon: '🚙', geselecteerd: false, voltooid: false }, { id: 106, tijd: '17:15', omschrijving: 'Inchecken hotel', icoon: '🏨', geselecteerd: false, voltooid: false }, { id: 107, tijd: '19:30', omschrijving: 'Diner in hotel', icoon: '🍽️', geselecteerd: false, voltooid: false } ] },
   { id: 2, datum: 'Donderdag 9 juli 2026', titel: 'Donderdag 9 juli', activiteiten: [ { id: 201, tijd: '09:30', omschrijving: 'Rustig ontbijten', icoon: '☕', geselecteerd: false, voltooid: false }, { id: 202, tijd: '11:00', omschrijving: 'Chillen zwembad', icoon: '🌊', geselecteerd: false, voltooid: false }, { id: 203, tijd: '13:30', omschrijving: 'Snelle lunch', icoon: '🍴', geselecteerd: false, voltooid: false }, { id: 204, tijd: '14:30', omschrijving: 'Duik Cala Agulla', icoon: '🏖️', geselecteerd: false, voltooid: false }, { id: 205, tijd: '19:00', omschrijving: 'Diner in hotel', icoon: '🍽️', geselecteerd: false, voltooid: false } ] },
@@ -161,7 +161,6 @@ const standaardDagschema = [
   { id: 10, datum: 'Vrijdag 17 juli 2026', titel: 'Vrijdag 17 juli', activiteiten: [ { id: 1001, tijd: '09:00', omschrijving: 'Koffers sluiten', icoon: '🎒', geselecteerd: false, voltooid: false }, { id: 1002, tijd: '10:00', omschrijving: 'Uitchecken', icoon: '🏨', geselecteerd: false, voltooid: false }, { id: 1003, tijd: '10:30', omschrijving: 'Rit vliegveld', icoon: '🚙', geselecteerd: false, voltooid: false }, { id: 1004, tijd: '11:45', omschrijving: 'Auto inleveren', icoon: '🔑', geselecteerd: false, voltooid: false }, { id: 1005, tijd: '13:45', omschrijving: 'Vlucht FR7282', icoon: '✈️', geselecteerd: false, voltooid: false }, { id: 1006, tijd: '16:25', omschrijving: 'Aankomst FMO', icoon: '🛬', geselecteerd: false, voltooid: false }, { id: 1007, tijd: '17:00', omschrijving: 'Rit naar huis', icoon: '🚗', geselecteerd: false, voltooid: false }, { id: 1008, tijd: '18:45', omschrijving: 'Aankomst Haren', icoon: '🏠', geselecteerd: false, voltooid: false } ] }
 ];
 
-// Functie die gids items automatisch indeelt op categorie
 const gegroepeerdeGids = computed(() => {
   const groepen: Record<string, any[]> = {};
   gidsItems.value.forEach(item => {
@@ -179,8 +178,27 @@ const slaSchemaLiveOp = async () => {
   } catch (error) { console.error("Fout bij opslaan schema:", error); }
 };
 
+const slaNotitieOp = async () => {
+  isAanHetOpslaan.value = true;
+  try {
+    await setDoc(doc(db, "appData", "prikbord"), { tekst: gedeeldeNotitie.value });
+  } catch (error) {
+    console.error("Fout bij opslaan notitie:", error);
+  } finally {
+    setTimeout(() => { isAanHetOpslaan.value = false; }, 600);
+  }
+};
+
 const haalDataOp = async () => {
   try {
+    const notitieDoc = await getDoc(doc(db, "appData", "prikbord"));
+    if (notitieDoc.exists()) {
+      gedeeldeNotitie.value = notitieDoc.data().tekst;
+    } else {
+      await setDoc(doc(db, "appData", "prikbord"), { tekst: "" });
+      gedeeldeNotitie.value = "";
+    }
+
     const gidsDoc = await getDoc(doc(db, "appData", "gidsData"));
     if (gidsDoc.exists()) {
       gidsItems.value = gidsDoc.data().lijst;
@@ -302,10 +320,11 @@ const rondGeselecteerdeAf = () => {
       <button :class="{ 'menu-actief': huidigScherm === 'gids' }" @click="huidigScherm = 'gids'">🏖️ Gids</button>
     </nav>
 
-    <div class="content-gebied">
+    <!-- Dynamische CSS class op basis van het huidige scherm -->
+    <div class="content-gebied" :class="huidigScherm === 'home' ? 'home-layout' : 'scroll-layout'">
       <transition name="fade" mode="out-in">
         
-        <!-- HOME SCHERM -->
+        <!-- HOME SCHERM (Volledig beeldvullend zonder scroll) -->
         <div v-if="huidigScherm === 'home'" class="home-scherm">
           <h2 class="welkom-titel">Welkom Weiner dogs!</h2>
           
@@ -343,7 +362,6 @@ const rondGeselecteerdeAf = () => {
           <div class="voorspelling-kaart">
             <h3>Weersverwachting Cala Ratjada</h3>
             <p class="voorspelling-sub">Komende 5 dagen</p>
-            
             <div class="voorspelling-lijst">
               <div v-for="(dag, index) in voorspelling" :key="index" class="voorspelling-rij">
                 <span class="v-dag">{{ dag.dag }}</span>
@@ -354,9 +372,26 @@ const rondGeselecteerdeAf = () => {
               <div v-if="voorspelling.length === 0" class="voorspelling-laden">Voorspelling laden...</div>
             </div>
           </div>
+
+          <div class="prikbord-kaart">
+            <h3 class="prikbord-titel">📌 Familie Prikbord</h3>
+            <textarea 
+              v-model="gedeeldeNotitie" 
+              class="prikbord-tekstvak" 
+              placeholder="Schrijf hier een berichtje voor de rest van de familie..."
+            ></textarea>
+            <button 
+              @click="slaNotitieOp" 
+              class="prikbord-opslaan-knop" 
+              :class="{ 'knop-actief': isAanHetOpslaan }"
+              :disabled="isAanHetOpslaan"
+            >
+              {{ isAanHetOpslaan ? '⏳ Opslaan...' : '💾 Opslaan voor iedereen' }}
+            </button>
+          </div>
         </div>
 
-        <!-- PLANNER SCHERM -->
+        <!-- PLANNER SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'planner'">
           <div v-if="laadtSchema" class="laad-scherm"><div class="spinner"></div><p>Schema laden...</p></div>
           <div v-else>
@@ -383,7 +418,7 @@ const rondGeselecteerdeAf = () => {
           </div>
         </div>
 
-        <!-- GIDS SCHERM -->
+        <!-- GIDS SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'gids'">
           <h2 class="hoofd-titel-gids">Lokale gids</h2>
           <div v-if="laadtGids" class="laad-scherm"><div class="spinner"></div><p>Gids ophalen...</p></div>
@@ -500,13 +535,7 @@ body {
   align-items: center;
 }
 
-.app-header h1 {
-  margin: 0;
-  font-size: 1.4rem;
-  font-weight: 600;
-  text-align: left;
-}
-
+.app-header h1 { margin: 0; font-size: 1.4rem; font-weight: 600; text-align: left; }
 .header-icon { font-size: 1.5rem; }
 
 .hoofd-menu { display: flex; background-color: white; border-bottom: 2px solid #eee; }
@@ -515,33 +544,59 @@ body {
 }
 .hoofd-menu button.menu-actief { color: var(--teal-donker); border-bottom: 3px solid var(--teal-donker); }
 
-.content-gebied { padding: 20px 15px; padding-bottom: 180px; }
+/* NIEUW: Lay-out per schermtype */
+.home-layout {
+  height: calc(100vh - 120px); 
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; 
+}
+.scroll-layout {
+  padding: 20px 15px 180px 15px;
+  overflow-y: auto;
+}
 
-/* Home scherm */
-.welkom-titel { margin-top: 0; color: var(--teal-donker); font-size: 1.3rem; text-align: center; }
-.compact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-.compact-kaart { border-radius: 8px; padding: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; }
-.compact-kaart h4 { margin: 0 0 8px 0; font-size: 0.85rem; font-weight: 600; }
+/* Home scherm specifiek */
+.home-scherm {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
+.welkom-titel { margin-top: 0; margin-bottom: 10px; color: var(--teal-donker); font-size: 1.2rem; text-align: center; }
+
+.compact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.compact-kaart { border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; }
+.compact-kaart h4 { margin: 0 0 6px 0; font-size: 0.85rem; font-weight: 600; }
 .aftel-kaart { background-color: var(--teal-donker); color: white; }
-.compact-groot { font-size: 1.2rem; font-weight: bold; }
-.compact-klein { font-size: 0.9rem; margin-top: 4px; opacity: 0.9; }
-.sec { font-size: 0.8rem; opacity: 0.8; }
+.compact-groot { font-size: 1.1rem; font-weight: bold; }
+.compact-klein { font-size: 0.85rem; margin-top: 2px; opacity: 0.9; }
+.sec { font-size: 0.75rem; opacity: 0.8; }
+
 .actueel-weer-kaart { background-color: white; border: 1px solid var(--teal-licht); color: var(--teal-donker); }
-.weer-regel { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; font-size: 0.85rem; }
+.weer-regel { display: flex; justify-content: space-between; align-items: center; margin: 2px 0; font-size: 0.85rem; }
 .weer-locatie { color: var(--tekst-grijs); font-weight: 500; }
 .weer-temp { font-weight: bold; }
 
-/* Voorspelling */
-.voorspelling-kaart { background-color: white; border: 2px solid var(--teal-licht); border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-.voorspelling-kaart h3 { margin: 0; color: var(--teal-donker); font-size: 1.1rem; }
-.voorspelling-sub { color: var(--tekst-grijs); font-size: 0.8rem; margin: 4px 0 15px 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-.voorspelling-lijst { display: flex; flex-direction: column; gap: 12px; }
-.voorspelling-rij { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; }
+.voorspelling-kaart { background-color: white; border: 2px solid var(--teal-licht); border-radius: 8px; padding: 12px 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 10px; }
+.voorspelling-kaart h3 { margin: 0; color: var(--teal-donker); font-size: 1rem; }
+.voorspelling-sub { color: var(--tekst-grijs); font-size: 0.75rem; margin: 4px 0 10px 0; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+.voorspelling-lijst { display: flex; flex-direction: column; gap: 8px; }
+.voorspelling-rij { display: flex; align-items: center; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed #eee; }
 .voorspelling-rij:last-child { border-bottom: none; }
-.v-dag { font-weight: bold; color: #333; width: 80px; }
-.v-icoon { font-size: 1.4rem; }
-.v-temp { font-weight: bold; color: var(--teal-donker); width: 40px; text-align: right; }
-.v-desc { font-size: 0.75rem; color: var(--tekst-grijs); text-transform: capitalize; text-align: right; flex: 1; }
+.v-dag { font-weight: bold; color: #333; width: 80px; font-size: 0.85rem; }
+.v-icoon { font-size: 1.2rem; }
+.v-temp { font-weight: bold; color: var(--teal-donker); width: 40px; text-align: right; font-size: 0.85rem; }
+.v-desc { font-size: 0.7rem; color: var(--tekst-grijs); text-transform: capitalize; text-align: right; flex: 1; }
+
+.prikbord-kaart { background-color: #fff9c4; border: 1px solid #f0e68c; border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; flex: 1; margin-top: 0; }
+.prikbord-titel { margin: 0 0 8px 0; color: #d35400; font-size: 1rem; }
+.prikbord-tekstvak { flex: 1; width: 100%; box-sizing: border-box; background: transparent; border: 1px dashed #e5c100; border-radius: 4px; padding: 10px; font-family: inherit; font-size: 0.9rem; color: #333; resize: none; margin-bottom: 10px; }
+.prikbord-tekstvak:focus { outline: none; border-color: #d35400; background-color: #fffbe6; }
+.prikbord-opslaan-knop { background-color: #f39c12; color: white; border: none; border-radius: 6px; padding: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+.prikbord-opslaan-knop:active { transform: scale(0.98); }
+.knop-actief { background-color: #e67e22; opacity: 0.8; cursor: not-allowed; }
 
 /* Planner */
 .dag-titel { font-size: 1.1rem; color: var(--teal-donker); margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
@@ -565,7 +620,7 @@ body {
 .vinkje { position: absolute; top: -8px; right: -8px; background-color: var(--oranje-vinkje); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-weight: bold; animation: pop-in 0.3s forwards; }
 
 /* Bodempaneel & Knoppen */
-.bottom-panel { position: sticky; bottom: 0; width: 100%; box-sizing: border-box; background-color: rgba(255, 255, 255, 0.98); padding: 15px 20px; text-align: center; border-top: 1px solid #eee; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 10; }
+.bottom-panel { position: fixed; bottom: 0; width: 100%; max-width: 400px; box-sizing: border-box; background-color: rgba(255, 255, 255, 0.98); padding: 15px 20px; text-align: center; border-top: 1px solid #eee; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 10; }
 .bottom-panel h3 { margin: 0 0 10px 0; color: #333; font-weight: 500; font-size: 1rem; }
 .bottom-panel p { margin: 0; color: var(--tekst-grijs); font-size: 0.85rem; }
 
