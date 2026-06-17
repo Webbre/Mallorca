@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
+// NIEUW: Deze variabele houdt bij op welk scherm we zijn
+const huidigScherm = ref('home'); // Start standaard op 'home'
+
 const dagschema = ref([
   {
     id: 1,
@@ -25,20 +28,16 @@ const dagschema = ref([
   }
 ]);
 
-// Functie om de geselecteerde status om te draaien
 const toggleSelectie = (activiteit: any) => {
   activiteit.geselecteerd = !activiteit.geselecteerd;
 };
 
-// NIEUW: Kijken of er in het hele dagschema ergens minimaal 1 activiteit geselecteerd is
 const heeftSelectie = computed(() => {
   return dagschema.value.some(dag => dag.activiteiten.some(act => act.geselecteerd));
 });
 
-// NIEUW: Functie om alle geselecteerde blokjes uit de lijst te filteren (verwijderen)
 const verwijderGeselecteerde = () => {
   dagschema.value.forEach(dag => {
-    // Bewaar alleen de activiteiten die NIET geselecteerd zijn
     dag.activiteiten = dag.activiteiten.filter(act => !act.geselecteerd);
   });
 };
@@ -47,32 +46,76 @@ const verwijderGeselecteerde = () => {
 <template>
   <main class="app-container">
     <header class="app-header">
-      <span class="back-button">❮</span>
-      <h1>Activiteiten</h1>
+      <h1>Vakantie Mallorca</h1>
     </header>
 
+    <nav class="hoofd-menu">
+      <button 
+        :class="{ 'menu-actief': huidigScherm === 'home' }" 
+        @click="huidigScherm = 'home'"
+      >
+        🏠 Home
+      </button>
+      <button 
+        :class="{ 'menu-actief': huidigScherm === 'planner' }" 
+        @click="huidigScherm = 'planner'"
+      >
+        📅 Planner
+      </button>
+      <button 
+        :class="{ 'menu-actief': huidigScherm === 'gids' }" 
+        @click="huidigScherm = 'gids'"
+      >
+        🏖️ Gids
+      </button>
+    </nav>
+
     <div class="content-gebied">
-      <div v-for="dag in dagschema" :key="dag.id" class="dag-sectie">
-        <h2 class="dag-titel">{{ dag.titel }}</h2>
-        
-        <div class="activiteiten-grid">
-          <div 
-            v-for="activiteit in dag.activiteiten" 
-            :key="activiteit.id" 
-            class="tegel"
-            :class="{ 'tegel-actief': activiteit.geselecteerd }"
-            @click="toggleSelectie(activiteit)"
-          >
-            <div v-if="activiteit.geselecteerd" class="vinkje">✓</div>
-            <div class="icoon">{{ activiteit.icoon }}</div>
-            <div class="titel">{{ activiteit.omschrijving }}</div>
-            <div class="tijd">{{ activiteit.tijd }}</div>
+      
+      <div v-if="huidigScherm === 'home'" class="home-scherm">
+        <h2>Welkom!</h2>
+        <div class="weer-dashboard">
+          <div class="weer-kaart">
+            <h3>📍 Cala Ratjada</h3>
+            <div class="weer-info">☀️ 28°C</div>
+            <p>Actueel weer (Voorbeeld)</p>
+          </div>
+          <div class="weer-kaart">
+            <h3>📍 Haren (Gn)</h3>
+            <div class="weer-info">☁️ 18°C</div>
+            <p>Actueel weer (Voorbeeld)</p>
           </div>
         </div>
       </div>
+
+      <div v-if="huidigScherm === 'planner'">
+        <div v-for="dag in dagschema" :key="dag.id" class="dag-sectie">
+          <h2 class="dag-titel">{{ dag.titel }}</h2>
+          <div class="activiteiten-grid">
+            <div 
+              v-for="activiteit in dag.activiteiten" 
+              :key="activiteit.id" 
+              class="tegel"
+              :class="{ 'tegel-actief': activiteit.geselecteerd }"
+              @click="toggleSelectie(activiteit)"
+            >
+              <div v-if="activiteit.geselecteerd" class="vinkje">✓</div>
+              <div class="icoon">{{ activiteit.icoon }}</div>
+              <div class="titel">{{ activiteit.omschrijving }}</div>
+              <div class="tijd">{{ activiteit.tijd }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="huidigScherm === 'gids'">
+        <h2>Strand & Snorkelgids</h2>
+        <p>Hier komt straks de interactieve lijst met baaitjes.</p>
+      </div>
+
     </div>
     
-    <div class="bottom-panel">
+    <div class="bottom-panel" v-if="huidigScherm === 'planner'">
       <div v-if="heeftSelectie">
         <h3>Geselecteerde acties</h3>
         <button class="actie-knop verwijder-knop" @click="verwijderGeselecteerde">
@@ -88,7 +131,7 @@ const verwijderGeselecteerde = () => {
 </template>
 
 <style>
-/* CSS Variabelen voor de kleuren uit de afbeelding */
+/* ... (Bestaande CSS blijft hetzelfde, we voegen alleen menu CSS toe) ... */
 :root {
   --teal-licht: #a0ceb9;
   --teal-donker: #7bb29e;
@@ -119,22 +162,72 @@ body {
   background-color: var(--teal-licht);
   color: white;
   padding: 15px 20px;
-  display: flex;
-  align-items: center;
-  font-size: 1.2rem;
-}
-
-.back-button {
-  margin-right: 15px;
-  cursor: pointer;
+  text-align: center;
 }
 
 .app-header h1 {
   margin: 0;
-  font-size: 1.2rem;
-  font-weight: 500;
+  font-size: 1.4rem;
+  font-weight: 600;
 }
 
+/* NIEUW: Opmaak voor het navigatiemenu */
+.hoofd-menu {
+  display: flex;
+  background-color: white;
+  border-bottom: 2px solid #eee;
+}
+
+.hoofd-menu button {
+  flex: 1;
+  padding: 12px 0;
+  border: none;
+  background: none;
+  font-size: 0.9rem;
+  color: var(--tekst-grijs);
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.hoofd-menu button.menu-actief {
+  color: var(--teal-donker);
+  border-bottom: 3px solid var(--teal-donker);
+}
+
+/* NIEUW: Opmaak voor het weer-dashboard */
+.weer-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.weer-kaart {
+  background-color: white;
+  border: 2px solid var(--teal-licht);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.weer-kaart h3 {
+  margin: 0 0 10px 0;
+  color: var(--teal-donker);
+}
+
+.weer-info {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.weer-kaart p {
+  color: var(--tekst-grijs);
+  margin: 5px 0 0 0;
+  font-size: 0.8rem;
+}
+
+/* Bestaande CSS voor de planner */
 .content-gebied {
   padding: 20px 15px;
   padding-bottom: 120px; 
@@ -240,7 +333,6 @@ body {
   font-size: 0.9rem;
 }
 
-/* NIEUW: Opmaak voor de actieknoppen */
 .actie-knop {
   padding: 12px 20px;
   border: none;
