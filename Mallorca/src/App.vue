@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
-// De data is uitgebreid met een 'icoon' en een 'geselecteerd' status
 const dagschema = ref([
   {
     id: 1,
@@ -9,7 +8,7 @@ const dagschema = ref([
     titel: 'Dag 1: Reisdag',
     activiteiten: [
       { id: 101, tijd: '08:30', omschrijving: 'Vertrek', icoon: '🚗', geselecteerd: false },
-      { id: 102, tijd: '12:50', omschrijving: 'Vlucht', icoon: '✈️', geselecteerd: true },
+      { id: 102, tijd: '12:50', omschrijving: 'Vlucht', icoon: '✈️', geselecteerd: false },
       { id: 103, tijd: '17:15', omschrijving: 'Inchecken', icoon: '🏨', geselecteerd: false }
     ]
   },
@@ -19,16 +18,29 @@ const dagschema = ref([
     titel: 'Dag 2: Rust & Strand',
     activiteiten: [
       { id: 201, tijd: '09:30', omschrijving: 'Ontbijt', icoon: '🥐', geselecteerd: false },
-      { id: 202, tijd: '11:00', omschrijving: 'Zwembad', icoon: '🏊‍♂️', geselecteerd: true },
+      { id: 202, tijd: '11:00', omschrijving: 'Zwembad', icoon: '🏊‍♂️', geselecteerd: false },
       { id: 203, tijd: '14:30', omschrijving: 'Strand', icoon: '🏖️', geselecteerd: false },
       { id: 204, tijd: '19:00', omschrijving: 'Diner', icoon: '🍽️', geselecteerd: false }
     ]
   }
 ]);
 
-// Functie om de geselecteerde status van een blokje om te draaien
+// Functie om de geselecteerde status om te draaien
 const toggleSelectie = (activiteit: any) => {
   activiteit.geselecteerd = !activiteit.geselecteerd;
+};
+
+// NIEUW: Kijken of er in het hele dagschema ergens minimaal 1 activiteit geselecteerd is
+const heeftSelectie = computed(() => {
+  return dagschema.value.some(dag => dag.activiteiten.some(act => act.geselecteerd));
+});
+
+// NIEUW: Functie om alle geselecteerde blokjes uit de lijst te filteren (verwijderen)
+const verwijderGeselecteerde = () => {
+  dagschema.value.forEach(dag => {
+    // Bewaar alleen de activiteiten die NIET geselecteerd zijn
+    dag.activiteiten = dag.activiteiten.filter(act => !act.geselecteerd);
+  });
 };
 </script>
 
@@ -61,13 +73,22 @@ const toggleSelectie = (activiteit: any) => {
     </div>
     
     <div class="bottom-panel">
-      <h3>Wat ga je er doen?</h3>
-      <p>Selecteer de activiteiten om ze te bewerken of te verplaatsen naar een andere dag.</p>
+      <div v-if="heeftSelectie">
+        <h3>Geselecteerde acties</h3>
+        <button class="actie-knop verwijder-knop" @click="verwijderGeselecteerde">
+          🗑️ Verwijderen
+        </button>
+      </div>
+      <div v-else>
+        <h3>Wat ga je er doen?</h3>
+        <p>Selecteer de activiteiten om ze te bewerken of te verplaatsen naar een andere dag.</p>
+      </div>
     </div>
   </main>
 </template>
 
 <style>
+/* CSS Variabelen voor de kleuren uit de afbeelding */
 :root {
   --teal-licht: #a0ceb9;
   --teal-donker: #7bb29e;
@@ -116,7 +137,7 @@ body {
 
 .content-gebied {
   padding: 20px 15px;
-  padding-bottom: 120px;
+  padding-bottom: 120px; 
 }
 
 .dag-titel {
@@ -195,7 +216,7 @@ body {
 }
 
 .bottom-panel {
-  position: fixed; /* Aangepast naar fixed zodat hij altijd onderaan het mobiele scherm staat */
+  position: fixed;
   bottom: 0;
   width: 100%;
   max-width: 400px;
@@ -217,5 +238,26 @@ body {
   margin: 0;
   color: var(--tekst-grijs);
   font-size: 0.9rem;
+}
+
+/* NIEUW: Opmaak voor de actieknoppen */
+.actie-knop {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.verwijder-knop {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.verwijder-knop:hover {
+  background-color: #c0392b;
 }
 </style>
