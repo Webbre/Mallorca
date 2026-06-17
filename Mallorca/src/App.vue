@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
-// NIEUW: Deze variabele houdt bij op welk scherm we zijn
-const huidigScherm = ref('home'); // Start standaard op 'home'
+const huidigScherm = ref('home'); 
 
 const dagschema = ref([
   {
@@ -46,7 +45,7 @@ const verwijderGeselecteerde = () => {
 <template>
   <main class="app-container">
     <header class="app-header">
-      <h1>Vakantie Mallorca</h1>
+      <h1>Mallorca 2026</h1>
     </header>
 
     <nav class="hoofd-menu">
@@ -73,7 +72,7 @@ const verwijderGeselecteerde = () => {
     <div class="content-gebied">
       
       <div v-if="huidigScherm === 'home'" class="home-scherm">
-        <h2>Welkom!</h2>
+        <h2>Welkom Weiner dogs!</h2>
         <div class="weer-dashboard">
           <div class="weer-kaart">
             <h3>📍 Cala Ratjada</h3>
@@ -131,7 +130,6 @@ const verwijderGeselecteerde = () => {
 </template>
 
 <style>
-/* ... (Bestaande CSS blijft hetzelfde, we voegen alleen menu CSS toe) ... */
 :root {
   --teal-licht: #a0ceb9;
   --teal-donker: #7bb29e;
@@ -171,7 +169,6 @@ body {
   font-weight: 600;
 }
 
-/* NIEUW: Opmaak voor het navigatiemenu */
 .hoofd-menu {
   display: flex;
   background-color: white;
@@ -194,7 +191,6 @@ body {
   border-bottom: 3px solid var(--teal-donker);
 }
 
-/* NIEUW: Opmaak voor het weer-dashboard */
 .weer-dashboard {
   display: flex;
   flex-direction: column;
@@ -227,7 +223,6 @@ body {
   font-size: 0.8rem;
 }
 
-/* Bestaande CSS voor de planner */
 .content-gebied {
   padding: 20px 15px;
   padding-bottom: 120px; 
@@ -308,9 +303,12 @@ body {
   font-weight: bold;
 }
 
+/* AANGEPAST: Flexbox trucs om het paneel te centreren */
 .bottom-panel {
   position: fixed;
   bottom: 0;
+  left: 50%; 
+  transform: translateX(-50%); 
   width: 100%;
   max-width: 400px;
   box-sizing: border-box;
