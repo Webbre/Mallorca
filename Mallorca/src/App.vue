@@ -3,6 +3,9 @@ import { ref, computed } from 'vue';
 
 const huidigScherm = ref('home'); 
 
+// NIEUW: Een 'schakelaar' om te onthouden of we het kies-een-dag menuutje moeten tonen
+const toonVerplaatsMenu = ref(false);
+
 const dagschema = ref([
   {
     id: 1,
@@ -39,6 +42,34 @@ const verwijderGeselecteerde = () => {
   dagschema.value.forEach(dag => {
     dag.activiteiten = dag.activiteiten.filter(act => !act.geselecteerd);
   });
+  toonVerplaatsMenu.value = false; // Menu sluiten voor de zekerheid
+};
+
+// NIEUW: De logica om blokjes over te hevelen naar een andere dag
+const verplaatsGeselecteerdeNaar = (doelDagId: number) => {
+  let teVerplaatsen: any[] = [];
+
+  // Stap 1: Verzamel de blokjes en haal ze uit hun oude dag
+  dagschema.value.forEach(dag => {
+    const geselecteerd = dag.activiteiten.filter(act => act.geselecteerd);
+    teVerplaatsen.push(...geselecteerd);
+    dag.activiteiten = dag.activiteiten.filter(act => !act.geselecteerd);
+  });
+
+  // Stap 2: Zoek de doeldag en voeg ze toe
+  const doelDag = dagschema.value.find(dag => dag.id === doelDagId);
+  if (doelDag) {
+    teVerplaatsen.forEach(act => {
+      act.geselecteerd = false; // Vinkje uitzetten na verplaatsen
+      doelDag.activiteiten.push(act);
+    });
+
+    // Stap 3: Sorteer de doeldag netjes op tijd (bijv. 08:30 komt voor 11:00)
+    doelDag.activiteiten.sort((a, b) => a.tijd.localeCompare(b.tijd));
+  }
+
+  // Stap 4: Sluit het menuutje weer
+  toonVerplaatsMenu.value = false;
 };
 </script>
 
@@ -49,24 +80,9 @@ const verwijderGeselecteerde = () => {
     </header>
 
     <nav class="hoofd-menu">
-      <button 
-        :class="{ 'menu-actief': huidigScherm === 'home' }" 
-        @click="huidigScherm = 'home'"
-      >
-        🏠 Home
-      </button>
-      <button 
-        :class="{ 'menu-actief': huidigScherm === 'planner' }" 
-        @click="huidigScherm = 'planner'"
-      >
-        📅 Planner
-      </button>
-      <button 
-        :class="{ 'menu-actief': huidigScherm === 'gids' }" 
-        @click="huidigScherm = 'gids'"
-      >
-        🏖️ Gids
-      </button>
+      <button :class="{ 'menu-actief': huidigScherm === 'home' }" @click="huidigScherm = 'home'">🏠 Home</button>
+      <button :class="{ 'menu-actief': huidigScherm === 'planner' }" @click="huidigScherm = 'planner'">📅 Planner</button>
+      <button :class="{ 'menu-actief': huidigScherm === 'gids' }" @click="huidigScherm = 'gids'">🏖️ Gids</button>
     </nav>
 
     <div class="content-gebied">
@@ -116,10 +132,34 @@ const verwijderGeselecteerde = () => {
     
     <div class="bottom-panel" v-if="huidigScherm === 'planner'">
       <div v-if="heeftSelectie">
-        <h3>Geselecteerde acties</h3>
-        <button class="actie-knop verwijder-knop" @click="verwijderGeselecteerde">
-          🗑️ Verwijderen
-        </button>
+        
+        <div v-if="!toonVerplaatsMenu">
+          <h3>Geselecteerde acties</h3>
+          <div class="actie-knoppen-rij">
+            <button class="actie-knop verplaats-knop" @click="toonVerplaatsMenu = true">
+              ➡️ Verplaatsen
+            </button>
+            <button class="actie-knop verwijder-knop" @click="verwijderGeselecteerde">
+              🗑️ Verwijderen
+            </button>
+          </div>
+        </div>
+
+        <div v-else>
+          <h3>Verplaatsen naar:</h3>
+          <div class="kies-dag-lijst">
+            <button 
+              v-for="dag in dagschema" 
+              :key="dag.id" 
+              class="kies-dag-knop"
+              @click="verplaatsGeselecteerdeNaar(dag.id)"
+            >
+              {{ dag.titel }}
+            </button>
+          </div>
+          <button class="annuleer-knop" @click="toonVerplaatsMenu = false">✖ Annuleren</button>
+        </div>
+
       </div>
       <div v-else>
         <h3>Wat ga je er doen?</h3>
@@ -130,10 +170,13 @@ const verwijderGeselecteerde = () => {
 </template>
 
 <style>
+/* ... (Eerdere CSS variabelen en algemene opmaak) ... */
 :root {
   --teal-licht: #a0ceb9;
   --teal-donker: #7bb29e;
   --oranje-vinkje: #f39c12;
+  --blauw-knop: #3498db;
+  --rood-knop: #e74c3c;
   --achtergrond: #fdfdfd;
   --tekst-grijs: #7f8c8d;
 }
@@ -225,7 +268,7 @@ body {
 
 .content-gebied {
   padding: 20px 15px;
-  padding-bottom: 120px; 
+  padding-bottom: 150px; /* Iets meer ruimte voor de nieuwe dubbele knoppen */
 }
 
 .dag-titel {
@@ -268,6 +311,7 @@ body {
   color: var(--teal-donker);
   font-size: 0.8rem;
   font-weight: 600;
+  line-height: 1.2;
 }
 
 .tijd {
@@ -303,7 +347,6 @@ body {
   font-weight: bold;
 }
 
-/* AANGEPAST: Flexbox trucs om het paneel te centreren */
 .bottom-panel {
   position: fixed;
   bottom: 0;
@@ -312,10 +355,11 @@ body {
   width: 100%;
   max-width: 400px;
   box-sizing: border-box;
-  background-color: rgba(255, 255, 255, 0.95);
-  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.98);
+  padding: 15px 20px;
   text-align: center;
   border-top: 1px solid #eee;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
   z-index: 10;
 }
 
@@ -323,31 +367,68 @@ body {
   margin: 0 0 10px 0;
   color: #333;
   font-weight: 500;
+  font-size: 1rem;
 }
 
 .bottom-panel p {
   margin: 0;
   color: var(--tekst-grijs);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+}
+
+/* NIEUW: Opmaak voor de dubbele knoppen op mobiel */
+.actie-knoppen-rij {
+  display: flex;
+  gap: 10px;
 }
 
 .actie-knop {
-  padding: 12px 20px;
+  flex: 1; /* Beide knoppen nemen evenveel ruimte in */
+  padding: 12px 10px;
   border: none;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   font-weight: bold;
-  transition: background-color 0.2s;
-  width: 100%;
-}
-
-.verwijder-knop {
-  background-color: #e74c3c;
   color: white;
+  transition: opacity 0.2s;
 }
 
-.verwijder-knop:hover {
-  background-color: #c0392b;
+.actie-knop:active { opacity: 0.8; }
+
+.verplaats-knop { background-color: var(--blauw-knop); }
+.verwijder-knop { background-color: var(--rood-knop); }
+
+/* NIEUW: Opmaak voor het lijstje met dagen */
+.kies-dag-lijst {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+  max-height: 150px;
+  overflow-y: auto; /* Zorgt dat je kunt scrollen als er straks 10 dagen zijn */
+}
+
+.kies-dag-knop {
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--teal-donker);
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.kies-dag-knop:active { background-color: #e9ecef; }
+
+.annuleer-knop {
+  width: 100%;
+  padding: 10px;
+  background: none;
+  border: none;
+  color: var(--tekst-grijs);
+  text-decoration: underline;
+  cursor: pointer;
 }
 </style>
