@@ -363,6 +363,23 @@ const rondGeselecteerdeAf = () => {
             </div>
           </div>
 
+          <!-- NIEUW: Handige Spaanse Woordjes Blokje -->
+          <div class="praktische-info-kaart">
+            <h3>🇪🇸 Handige Spaanse woordjes</h3>
+            <div class="info-rij">
+              <span class="info-label">Hallo / Doei:</span>
+              <span class="info-waarde">Hola / Adiós</span>
+            </div>
+            <div class="info-rij">
+              <span class="info-label">Bedankt:</span>
+              <span class="info-waarde">Gracias</span>
+            </div>
+            <div class="info-rij">
+              <span class="info-label">Twee biertjes:</span>
+              <span class="info-waarde">Dos cervezas</span>
+            </div>
+          </div>
+
         </div>
 
         <!-- PLANNER SCHERM (Scrollen mogelijk) -->
@@ -486,7 +503,6 @@ const rondGeselecteerdeAf = () => {
   --tekst-grijs: #7f8c8d;
 }
 
-/* FIX: Volledig over het scherm getrokken zonder flex krimp-gedrag */
 html, body {
   margin: 0;
   padding: 0;
@@ -496,10 +512,9 @@ html, body {
   overflow: hidden; 
   overscroll-behavior-y: none;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  display: block; /* Dit haalt het probleem weg dat de achtergrond krimpt op smallere schermen */
+  display: block; 
 }
 
-/* FIX: App container is nu hard ingebouwd op 100% breedte */
 .app-container {
   width: 100vw;
   height: 100dvh; 
@@ -569,13 +584,14 @@ html, body {
   -webkit-overflow-scrolling: touch; 
 }
 
-/* HOME SCHERM COMPRESSIE */
+/* FIX: HOME SCHERM COMPRESSIE MET VASTE STAPELING */
 .home-scherm {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly; 
-  gap: 4px; 
+  justify-content: flex-start; /* Verandert de uitrekking in een nette opstapeling vanaf de bovenkant */
+  gap: 12px; /* Zorgt voor een strakke, vaste ruimte tussen alle blokken */
+  padding-top: 10px; /* Geeft een klein beetje witruimte aan de bovenkant */
   min-height: 0; 
 }
 .welkom-titel { margin: 0; color: var(--teal-donker); font-size: 1.1rem; text-align: center; } 
@@ -604,6 +620,7 @@ html, body {
 .v-temp { font-weight: bold; color: var(--teal-donker); width: 40px; text-align: right; font-size: 0.8rem; }
 .v-desc { font-size: 0.7rem; color: var(--tekst-grijs); text-transform: capitalize; text-align: right; flex: 1; }
 
+/* De CSS voor zowel de Praktische Info als de Spaanse Woordjes */
 .praktische-info-kaart {
   background-color: white;
   border: 2px solid var(--teal-licht);
