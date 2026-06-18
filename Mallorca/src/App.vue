@@ -344,6 +344,23 @@ const rondGeselecteerdeAf = () => {
               <div v-if="voorspelling.length === 0" class="voorspelling-laden">Voorspelling laden...</div>
             </div>
           </div>
+
+          <div class="praktische-info-kaart">
+            <h3>ℹ️ Praktische Info</h3>
+            <div class="info-rij">
+              <span class="info-label">Vlucht Heen:</span>
+              <span class="info-waarde">FR7386 (12:50)</span>
+            </div>
+            <div class="info-rij">
+              <span class="info-label">Vlucht Terug:</span>
+              <span class="info-waarde">FR7282 (13:45)</span>
+            </div>
+            <div class="info-rij">
+              <span class="info-label">Auto inleveren:</span>
+              <span class="info-waarde">17 juli (11:45)</span>
+            </div>
+          </div>
+
         </div>
 
         <div v-else-if="huidigScherm === 'planner'">
@@ -505,7 +522,7 @@ body {
 }
 .hoofd-menu button.menu-actief { color: var(--teal-donker); border-bottom: 3px solid var(--teal-donker); }
 
-/* NIEUW: Lay-out per schermtype */
+/* Lay-out per schermtype */
 .content-gebied {
   flex: 1; /* Content gebied vult exact de resterende ruimte */
   display: flex;
@@ -514,7 +531,7 @@ body {
 
 .home-layout {
   padding: 15px;
-  overflow: hidden; /* Nooit scrollen op het home scherm */
+  overflow: hidden; /* Zorgt ervoor dat scrollen geblokkeerd is als het scherm groot genoeg is */
 }
 .scroll-layout {
   padding: 20px 15px 180px 15px;
@@ -526,11 +543,11 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  justify-content: space-evenly; /* Verdeelt de elementen perfect elastisch over het scherm */
+  gap: 15px; /* Vaste ruimte tussen de elementen, geen uittrekking meer! */
 }
-.welkom-titel { margin-top: 0; margin-bottom: 10px; color: var(--teal-donker); font-size: 1.2rem; text-align: center; }
+.welkom-titel { margin-top: 0; margin-bottom: 0px; color: var(--teal-donker); font-size: 1.2rem; text-align: center; }
 
-.compact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.compact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .compact-kaart { border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; }
 .compact-kaart h4 { margin: 0 0 6px 0; font-size: 0.85rem; font-weight: 600; }
 .aftel-kaart { background-color: var(--teal-donker); color: white; }
@@ -543,7 +560,7 @@ body {
 .weer-locatie { color: var(--tekst-grijs); font-weight: 500; }
 .weer-temp { font-weight: bold; }
 
-.voorspelling-kaart { background-color: white; border: 2px solid var(--teal-licht); border-radius: 8px; padding: 12px 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 10px; }
+.voorspelling-kaart { background-color: white; border: 2px solid var(--teal-licht); border-radius: 8px; padding: 12px 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 .voorspelling-kaart h3 { margin: 0; color: var(--teal-donker); font-size: 1rem; }
 .voorspelling-sub { color: var(--tekst-grijs); font-size: 0.75rem; margin: 4px 0 10px 0; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 .voorspelling-lijst { display: flex; flex-direction: column; gap: 8px; }
@@ -553,6 +570,30 @@ body {
 .v-icoon { font-size: 1.2rem; }
 .v-temp { font-weight: bold; color: var(--teal-donker); width: 40px; text-align: right; font-size: 0.85rem; }
 .v-desc { font-size: 0.7rem; color: var(--tekst-grijs); text-transform: capitalize; text-align: right; flex: 1; }
+
+/* NIEUW: Praktische Info Kaart */
+.praktische-info-kaart {
+  background-color: white;
+  border: 2px solid var(--teal-licht);
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.praktische-info-kaart h3 {
+  margin: 0 0 10px 0;
+  color: var(--teal-donker);
+  font-size: 1.05rem;
+}
+.info-rij {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 0.85rem;
+}
+.info-rij:last-child { border-bottom: none; }
+.info-label { color: var(--tekst-grijs); }
+.info-waarde { font-weight: bold; color: #333; }
 
 /* Planner */
 .dag-titel { font-size: 1.1rem; color: var(--teal-donker); margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
@@ -576,7 +617,7 @@ body {
 .vinkje { position: absolute; top: -8px; right: -8px; background-color: var(--oranje-vinkje); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-weight: bold; animation: pop-in 0.3s forwards; }
 
 /* Bodempaneel & Knoppen */
-.bottom-panel { position: absolute; bottom: 0; width: 100%; box-sizing: border-box; background-color: rgba(255, 255, 255, 0.98); padding: 15px 20px; text-align: center; border-top: 1px solid #eee; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 10; }
+.bottom-panel { position: absolute; bottom: 0; width: 100%; max-width: 400px; box-sizing: border-box; background-color: rgba(255, 255, 255, 0.98); padding: 15px 20px; text-align: center; border-top: 1px solid #eee; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 10; }
 .bottom-panel h3 { margin: 0 0 10px 0; color: #333; font-weight: 500; font-size: 1rem; }
 .bottom-panel p { margin: 0; color: var(--tekst-grijs); font-size: 0.85rem; }
 
