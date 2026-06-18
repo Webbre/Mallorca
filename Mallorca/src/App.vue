@@ -61,7 +61,7 @@ const startCountdown = () => {
   aftelTimer = setInterval(updateTimer, 1000);
 };
 
-// --- 2. LIVE WEER LOGICA ---
+// --- 2. LIVE WEER LOGICA (Inclusief Vandaag/Morgen) ---
 const liveWeer = ref({
   calaRatjada: { temp: '--', conditie: '', icoon: '⏳' },
   haren: { temp: '--', conditie: '', icoon: '⏳' }
@@ -145,6 +145,46 @@ const heeftSlechtWeerWaarschuwing = (omschrijving: string) => {
   return isSlechtWeer && isBuiten;
 };
 
+// --- SPAANSE WOORDJES LOGICA ---
+const alleWoordjes = [
+  { n: 'Hallo', s: 'Hola' }, { n: 'Goedemorgen', s: 'Buenos días' }, { n: 'Tot ziens', s: 'Adiós' }, { n: 'Bedankt', s: 'Gracias' },
+  { n: 'Alsjeblieft', s: 'Por favor' }, { n: 'Ja', s: 'Sí' }, { n: 'Nee', s: 'No' }, { n: 'Pardon', s: 'Perdón' },
+  { n: 'Bier', s: 'Cerveza' }, { n: 'Wijn', s: 'Vino' }, { n: 'Water', s: 'Agua' }, { n: 'Koffie', s: 'Café' },
+  { n: 'Rekening', s: 'La cuenta' }, { n: 'Ontbijt', s: 'Desayuno' }, { n: 'Lunch', s: 'Almuerzo' }, { n: 'Diner', s: 'Cena' },
+  { n: 'Strand', s: 'Playa' }, { n: 'Zwemmen', s: 'Nadar' }, { n: 'Zon', s: 'Sol' }, { n: 'Zee', s: 'Mar' },
+  { n: 'Auto', s: 'Coche' }, { n: 'Vliegtuig', s: 'Avión' }, { n: 'Hotel', s: 'Hotel' }, { n: 'Weg', s: 'Camino' },
+  { n: 'Links', s: 'Izquierda' }, { n: 'Rechts', s: 'Derecha' }, { n: 'Rechtuit', s: 'Recto' }, { n: 'Hier', s: 'Aquí' },
+  { n: 'Daar', s: 'Allí' }, { n: 'Hoeveel?', s: '¿Cuánto?' }, { n: 'Wanneer?', s: '¿Cuándo?' }, { n: 'Waar?', s: '¿Dónde?' },
+  { n: 'Ik', s: 'Yo' }, { n: 'Jij', s: 'Tú' }, { n: 'Wij', s: 'Nosotros' }, { n: 'Vriend', s: 'Amigo' },
+  { n: 'Mooi', s: 'Bonito' }, { n: 'Lekker', s: 'Rico' }, { n: 'Goed', s: 'Bien' }, { n: 'Slecht', s: 'Mal' },
+  { n: 'Warm', s: 'Calor' }, { n: 'Koud', s: 'Frío' }, { n: 'Groot', s: 'Grande' }, { n: 'Klein', s: 'Pequeño' },
+  { n: 'Vandaag', s: 'Hoy' }, { n: 'Morgen', s: 'Mañana' }, { n: 'Gisteren', s: 'Ayer' }, { n: 'Nu', s: 'Ahora' },
+  { n: 'Tijd', s: 'Tiempo' }, { n: 'Dag', s: 'Día' }, { n: 'Nacht', s: 'Noche' }, { n: 'Week', s: 'Semana' },
+  { n: 'Eén', s: 'Uno' }, { n: 'Twee', s: 'Dos' }, { n: 'Drie', s: 'Tres' }, { n: 'Vier', s: 'Cuatro' },
+  { n: 'Vijf', s: 'Cinco' }, { n: 'Zes', s: 'Seis' }, { n: 'Zeven', s: 'Siete' }, { n: 'Acht', s: 'Ocho' },
+  { n: 'Negen', s: 'Nueve' }, { n: 'Tien', s: 'Diez' }, { n: 'Rood', s: 'Rojo' }, { n: 'Blauw', s: 'Azul' },
+  { n: 'Groen', s: 'Verde' }, { n: 'Geel', s: 'Amarillo' }, { n: 'Wit', s: 'Blanco' }, { n: 'Zwart', s: 'Negro' },
+  { n: 'Huis', s: 'Casa' }, { n: 'Stad', s: 'Ciudad' }, { n: 'Winkel', s: 'Tienda' }, { n: 'Markt', s: 'Mercado' },
+  { n: 'Brood', s: 'Pan' }, { n: 'Fruit', s: 'Fruta' }, { n: 'Groente', s: 'Verdura' }, { n: 'Vlees', s: 'Carne' },
+  { n: 'Vis', s: 'Pescado' }, { n: 'IJsje', s: 'Helado' }, { n: 'Suiker', s: 'Azúcar' }, { n: 'Zout', s: 'Sal' },
+  { n: 'Toilet', s: 'Baño' }, { n: 'Dokter', s: 'Médico' }, { n: 'Politie', s: 'Policía' }, { n: 'Hulp', s: 'Ayuda' },
+  { n: 'Open', s: 'Abierto' }, { n: 'Dicht', s: 'Cerrado' }, { n: 'Gratis', s: 'Gratis' }, { n: 'Duur', s: 'Caro' },
+  { n: 'Goedkoop', s: 'Barato' }, { n: 'Snel', s: 'Rápido' }, { n: 'Langzaam', s: 'Lento' }, { n: 'Meer', s: 'Más' },
+  { n: 'Minder', s: 'Menos' }, { n: 'Heel erg', s: 'Muy' }, { n: 'Zonder', s: 'Sin' }, { n: 'Met', s: 'Con' },
+  { n: 'Graag gedaan', s: 'De nada' }, { n: 'Sorry', s: 'Lo siento' }
+];
+
+const huidigeWoordjes = ref<{n: string, s: string}[]>([]);
+
+const kiesNieuweWoordjes = () => {
+  const geselecteerd: typeof alleWoordjes = [];
+  while(geselecteerd.length < 3) {
+    const w = alleWoordjes[Math.floor(Math.random() * alleWoordjes.length)];
+    if(!geselecteerd.includes(w)) geselecteerd.push(w);
+  }
+  huidigeWoordjes.value = geselecteerd;
+};
+
 // --- 3 & 4. FIREBASE SYNCHRONISATIE (GIDS & DAGSCHEMA) ---
 const gidsItems = ref<any[]>([]);
 const laadtGids = ref(true);
@@ -220,6 +260,7 @@ onMounted(() => {
   startCountdown();
   haalWeerOp();
   haalDataOp(); 
+  kiesNieuweWoordjes(); 
 });
 
 onUnmounted(() => { clearInterval(aftelTimer); });
@@ -311,11 +352,9 @@ const rondGeselecteerdeAf = () => {
       <button :class="{ 'menu-actief': huidigScherm === 'gids' }" @click="huidigScherm = 'gids'">🏖️ Gids</button>
     </nav>
 
-    <!-- Dynamische CSS class op basis van het huidige scherm -->
     <div class="content-gebied" :class="huidigScherm === 'home' ? 'home-layout' : 'scroll-layout'">
       <transition name="fade" mode="out-in">
         
-        <!-- HOME SCHERM (Volledig beeldvullend zonder scroll) -->
         <div v-if="huidigScherm === 'home'" class="home-scherm">
           <h2 class="welkom-titel">Welkom Weiner dogs!</h2>
           
@@ -364,7 +403,6 @@ const rondGeselecteerdeAf = () => {
             </div>
           </div>
 
-          <!-- Praktische Info Blokje -->
           <div class="praktische-info-kaart">
             <h3>ℹ️ Praktische info</h3>
             <div class="info-rij">
@@ -381,26 +419,16 @@ const rondGeselecteerdeAf = () => {
             </div>
           </div>
 
-          <!-- Handige Spaanse Woordjes Blokje -->
           <div class="praktische-info-kaart">
             <h3>🇪🇸 Handige Spaanse woordjes</h3>
-            <div class="info-rij">
-              <span class="info-label">Hallo / Doei:</span>
-              <span class="info-waarde">Hola / Adiós</span>
-            </div>
-            <div class="info-rij">
-              <span class="info-label">Bedankt:</span>
-              <span class="info-waarde">Gracias</span>
-            </div>
-            <div class="info-rij">
-              <span class="info-label">Twee biertjes:</span>
-              <span class="info-waarde">Dos cervezas</span>
+            <div v-for="w in huidigeWoordjes" :key="w.n" class="info-rij">
+              <span class="info-label">{{ w.n }}:</span>
+              <span class="info-waarde">{{ w.s }}</span>
             </div>
           </div>
 
         </div>
 
-        <!-- PLANNER SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'planner'">
           <div v-if="laadtSchema" class="laad-scherm"><div class="spinner"></div><p>Schema laden...</p></div>
           <div v-else>
@@ -427,7 +455,6 @@ const rondGeselecteerdeAf = () => {
           </div>
         </div>
 
-        <!-- GIDS SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'gids'">
           <h2 class="hoofd-titel-gids">Lokale gids</h2>
           <div v-if="laadtGids" class="laad-scherm"><div class="spinner"></div><p>Gids ophalen...</p></div>
@@ -452,13 +479,11 @@ const rondGeselecteerdeAf = () => {
       </transition>
     </div>
     
-    <!-- BOTTOM PANEL VOOR PLANNER -->
     <div class="bottom-panel" v-if="huidigScherm === 'planner' && !laadtSchema">
       <transition name="fade" mode="out-in">
         
         <div v-if="heeftSelectie" key="acties">
           <div v-if="!toonVerplaatsMenu">
-            <h3>Geselecteerde acties</h3>
             <div class="actie-knoppen-rij">
               <button class="actie-knop afrond-knop" @click="rondGeselecteerdeAf">✅ Afronden</button>
               <button class="actie-knop verplaats-knop" @click="toonVerplaatsMenu = true">➡️ Verplaats</button>
@@ -494,8 +519,8 @@ const rondGeselecteerdeAf = () => {
         </div>
 
         <div v-else key="leeg">
-          <h3>Wat ga je er doen?</h3>
-          <p style="margin-bottom:10px;">Selecteer acties om ze te bewerken.</p>
+          <h3>Wat ga je doen?</h3>
+          <p style="margin-bottom:10px;">Selecteer een activiteit om te bewerken.</p>
           <button class="nieuwe-actie-knop" @click="toonNieuwMenu = true">➕ Nieuwe activiteit</button>
         </div>
 
@@ -610,12 +635,13 @@ html, body {
   padding-top: 10px; 
   min-height: 0; 
 }
-.welkom-titel { margin: 0; color: var(--teal-donker); font-size: 1.1rem; text-align: center; } 
+.welkom-titel { margin: 0; color: var(--teal-donker); font-size: 1.1rem; text-align: left; } 
 
 .compact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0; } 
 .compact-kaart { border-radius: 8px; padding: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; }
 .compact-kaart h4 { margin: 0 0 4px 0; font-size: 0.85rem; font-weight: 600; }
 .aftel-kaart { background-color: var(--teal-donker); color: white; }
+.actueel-weer-kaart h4 { text-align: left; }
 .compact-groot { font-size: 1.05rem; font-weight: bold; }
 .compact-klein { font-size: 0.8rem; margin-top: 2px; opacity: 0.9; }
 .sec { font-size: 0.75rem; opacity: 0.8; }
@@ -700,7 +726,7 @@ html, body {
 .formulier { display: flex; flex-direction: column; gap: 10px; }
 .form-rij { display: flex; gap: 10px; }
 .form-input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; font-size: 0.9rem; }
-.form-tijd { width: 80px; }
+.form-tijd { width: 115px; }
 .form-tekst { flex: 1; }
 
 .kies-dag-lijst { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; max-height: 150px; overflow-y: auto; }
