@@ -293,9 +293,11 @@ const rondGeselecteerdeAf = () => {
       <button :class="{ 'menu-actief': huidigScherm === 'gids' }" @click="huidigScherm = 'gids'">🏖️ Gids</button>
     </nav>
 
+    <!-- Dynamische CSS class op basis van het huidige scherm -->
     <div class="content-gebied" :class="huidigScherm === 'home' ? 'home-layout' : 'scroll-layout'">
       <transition name="fade" mode="out-in">
         
+        <!-- HOME SCHERM (Volledig beeldvullend zonder scroll) -->
         <div v-if="huidigScherm === 'home'" class="home-scherm">
           <h2 class="welkom-titel">Welkom Weiner dogs!</h2>
           
@@ -344,6 +346,7 @@ const rondGeselecteerdeAf = () => {
             </div>
           </div>
 
+          <!-- Praktische Info Blokje -->
           <div class="praktische-info-kaart">
             <h3>ℹ️ Praktische Info</h3>
             <div class="info-rij">
@@ -362,6 +365,7 @@ const rondGeselecteerdeAf = () => {
 
         </div>
 
+        <!-- PLANNER SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'planner'">
           <div v-if="laadtSchema" class="laad-scherm"><div class="spinner"></div><p>Schema laden...</p></div>
           <div v-else>
@@ -388,6 +392,7 @@ const rondGeselecteerdeAf = () => {
           </div>
         </div>
 
+        <!-- GIDS SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'gids'">
           <h2 class="hoofd-titel-gids">Lokale gids</h2>
           <div v-if="laadtGids" class="laad-scherm"><div class="spinner"></div><p>Gids ophalen...</p></div>
@@ -412,6 +417,7 @@ const rondGeselecteerdeAf = () => {
       </transition>
     </div>
     
+    <!-- BOTTOM PANEL VOOR PLANNER -->
     <div class="bottom-panel" v-if="huidigScherm === 'planner' && !laadtSchema">
       <transition name="fade" mode="out-in">
         
@@ -464,7 +470,7 @@ const rondGeselecteerdeAf = () => {
 </template>
 
 <style>
-/* CSS RESET: Zorgt voor exact gelijke breedtes en hoogtes overal */
+/* CSS RESET */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -480,34 +486,31 @@ const rondGeselecteerdeAf = () => {
   --tekst-grijs: #7f8c8d;
 }
 
-/* FIX: Zijkanten. Achtergrond over het VOLLEDIGE scherm, app mag 100% breed worden */
+/* FIX: Volledig over het scherm getrokken zonder flex krimp-gedrag */
 html, body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100dvh;
   background-color: var(--achtergrond);
   overflow: hidden; 
   overscroll-behavior-y: none;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: block; /* Dit haalt het probleem weg dat de achtergrond krimpt op smallere schermen */
 }
 
-body {
-  display: flex;
-  justify-content: center;
-}
-
-/* FIX: max-width is nu compleet verwijderd uit de hele app! */
+/* FIX: App container is nu hard ingebouwd op 100% breedte */
 .app-container {
-  width: 100%;
+  width: 100vw;
   height: 100dvh; 
+  max-width: 100%; 
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden; 
 }
 
-/* Verbergt álle browser-scrollbalken om breedte-verspringingen 100% uit te sluiten */
+/* Verbergt scrollbalken om breedte-verspringingen uit te sluiten */
 * {
   scrollbar-width: none;
 }
@@ -517,9 +520,9 @@ body {
 
 .app-header, .hoofd-menu {
   flex-shrink: 0; 
+  width: 100%;
 }
 
-/* FIX: Minder hoge header om ruimte te besparen */
 .app-header {
   background-color: var(--teal-licht);
   color: white;
@@ -533,7 +536,6 @@ body {
 .header-icon { font-size: 1.5rem; }
 
 .hoofd-menu { display: flex; background-color: white; border-bottom: 2px solid #eee; }
-/* FIX: Minder hoge knoppen om ruimte te besparen */
 .hoofd-menu button {
   flex: 1; padding: 10px 0; border: none; background: none; font-size: 0.9rem; color: var(--tekst-grijs); cursor: pointer; font-weight: bold; transition: background-color 0.2s;
 }
@@ -548,7 +550,6 @@ body {
   overflow: hidden;
 }
 
-/* FIX: Het home scherm staat MUURVAST (overflow: hidden) */
 .home-layout {
   flex: 1;
   padding: 8px 15px; 
@@ -568,7 +569,7 @@ body {
   -webkit-overflow-scrolling: touch; 
 }
 
-/* FIX: HOME SCHERM COMPRESSIE (Alles is iets strakker tegen elkaar aangeschoven) */
+/* HOME SCHERM COMPRESSIE */
 .home-scherm {
   flex: 1;
   display: flex;
@@ -647,7 +648,7 @@ body {
 @keyframes pop-in { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 .vinkje { position: absolute; top: -8px; right: -8px; background-color: var(--oranje-vinkje); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-weight: bold; animation: pop-in 0.3s forwards; }
 
-/* Bodempaneel & Knoppen - OOK HIER IS DE MAX-WIDTH WEGGEHAALD! */
+/* Bodempaneel & Knoppen */
 .bottom-panel { position: absolute; bottom: 0; width: 100%; box-sizing: border-box; background-color: rgba(255, 255, 255, 0.98); padding: 15px 20px; text-align: center; border-top: 1px solid #eee; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 10; }
 .bottom-panel h3 { margin: 0 0 10px 0; color: #333; font-weight: 500; font-size: 1rem; }
 .bottom-panel p { margin: 0; color: var(--tekst-grijs); font-size: 0.85rem; }
