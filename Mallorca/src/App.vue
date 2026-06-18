@@ -294,9 +294,11 @@ const rondGeselecteerdeAf = () => {
       <button :class="{ 'menu-actief': huidigScherm === 'gids' }" @click="huidigScherm = 'gids'">🏖️ Gids</button>
     </nav>
 
+    <!-- Dynamische CSS class op basis van het huidige scherm -->
     <div class="content-gebied" :class="huidigScherm === 'home' ? 'home-layout' : 'scroll-layout'">
       <transition name="fade" mode="out-in">
         
+        <!-- HOME SCHERM (Volledig beeldvullend zonder scroll) -->
         <div v-if="huidigScherm === 'home'" class="home-scherm">
           <h2 class="welkom-titel">Welkom Weiner dogs!</h2>
           
@@ -345,6 +347,7 @@ const rondGeselecteerdeAf = () => {
             </div>
           </div>
 
+          <!-- Praktische Info Blokje -->
           <div class="praktische-info-kaart">
             <h3>ℹ️ Praktische Info</h3>
             <div class="info-rij">
@@ -363,6 +366,7 @@ const rondGeselecteerdeAf = () => {
 
         </div>
 
+        <!-- PLANNER SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'planner'">
           <div v-if="laadtSchema" class="laad-scherm"><div class="spinner"></div><p>Schema laden...</p></div>
           <div v-else>
@@ -389,6 +393,7 @@ const rondGeselecteerdeAf = () => {
           </div>
         </div>
 
+        <!-- GIDS SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'gids'">
           <h2 class="hoofd-titel-gids">Lokale gids</h2>
           <div v-if="laadtGids" class="laad-scherm"><div class="spinner"></div><p>Gids ophalen...</p></div>
@@ -413,6 +418,7 @@ const rondGeselecteerdeAf = () => {
       </transition>
     </div>
     
+    <!-- BOTTOM PANEL VOOR PLANNER -->
     <div class="bottom-panel" v-if="huidigScherm === 'planner' && !laadtSchema">
       <transition name="fade" mode="out-in">
         
@@ -481,12 +487,11 @@ const rondGeselecteerdeAf = () => {
   --tekst-grijs: #7f8c8d;
 }
 
-/* De html en body worden VOLLEDIG vastgepind aan het scherm */
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden; /* Cruciaal: voorkomt dat de HELE browserpagina kan scrollen of bouncen */
+  overflow: hidden; 
   overscroll-behavior-y: none;
   background-color: #e8f0eb;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -499,14 +504,13 @@ body {
 
 .app-container {
   width: 100%;
-  max-width: 400px;
+  height: 100dvh; 
   background-color: var(--achtergrond);
-  height: 100dvh; /* Pakt exact de schermhoogte inclusief interface-balken */
   display: flex;
   flex-direction: column;
   position: relative;
   box-shadow: 0 0 20px rgba(0,0,0,0.1);
-  overflow: hidden; /* Blokkeert uitschieters */
+  overflow: hidden; 
 }
 
 .app-header, .hoofd-menu {
@@ -537,35 +541,38 @@ body {
   flex-direction: column;
   width: 100%; 
   position: relative;
+  overflow: hidden;
 }
 
 .home-layout {
-  padding: 15px;
-  overflow: hidden; /* Home scherm mag NOOIT scrollen */
+  flex: 1;
+  padding: 10px 15px; 
+  display: flex;
+  flex-direction: column;
+  min-height: 0; 
   width: 100%; 
 }
 .scroll-layout {
+  flex: 1;
   padding: 20px 15px 180px 15px;
-  overflow-y: auto; /* Alleen deze container mag scrollen */
+  overflow-y: auto; 
   overflow-x: hidden; 
   width: 100%; 
-  -webkit-overflow-scrolling: touch; /* Voor extreem soepel scrollen op iPhones */
+  -webkit-overflow-scrolling: touch; 
 }
 
-/* Verbergt de browser-scrollbalk voor een strakke, app-achtige ervaring zonder verspringingen */
 ::-webkit-scrollbar {
   width: 0px;
   background: transparent;
 }
 
-/* COMPACTERE HOME SCHERM LAYOUT */
 .home-scherm {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  width: 100%; 
   justify-content: space-evenly; 
-  gap: 6px; 
+  gap: 4px; 
+  min-height: 0; 
 }
 .welkom-titel { margin-top: 0; margin-bottom: 0; color: var(--teal-donker); font-size: 1.15rem; text-align: center; } 
 
@@ -582,24 +589,22 @@ body {
 .weer-locatie { color: var(--tekst-grijs); font-weight: 500; }
 .weer-temp { font-weight: bold; }
 
-/* COMPACTERE VOORSPELLING */
-.voorspelling-kaart { background-color: white; border: 2px solid var(--teal-licht); border-radius: 8px; padding: 10px 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 0; }
+.voorspelling-kaart { background-color: white; border: 2px solid var(--teal-licht); border-radius: 8px; padding: 8px 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 0; }
 .voorspelling-kaart h3 { margin: 0; color: var(--teal-donker); font-size: 1rem; }
 .voorspelling-sub { color: var(--tekst-grijs); font-size: 0.75rem; margin: 2px 0 6px 0; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 .voorspelling-lijst { display: flex; flex-direction: column; gap: 6px; }
-.voorspelling-rij { display: flex; align-items: center; justify-content: space-between; padding: 1px 0; border-bottom: 1px dashed #eee; }
+.voorspelling-rij { display: flex; align-items: center; justify-content: space-between; padding: 0; border-bottom: 1px dashed #eee; }
 .voorspelling-rij:last-child { border-bottom: none; }
 .v-dag { font-weight: bold; color: #333; width: 80px; font-size: 0.85rem; }
 .v-icoon { font-size: 1.2rem; }
 .v-temp { font-weight: bold; color: var(--teal-donker); width: 40px; text-align: right; font-size: 0.85rem; }
 .v-desc { font-size: 0.7rem; color: var(--tekst-grijs); text-transform: capitalize; text-align: right; flex: 1; }
 
-/* COMPACTERE PRAKTISCHE INFO */
 .praktische-info-kaart {
   background-color: white;
   border: 2px solid var(--teal-licht);
   border-radius: 8px;
-  padding: 10px 15px;
+  padding: 8px 15px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 .praktische-info-kaart h3 {
@@ -640,7 +645,7 @@ body {
 .vinkje { position: absolute; top: -8px; right: -8px; background-color: var(--oranje-vinkje); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-weight: bold; animation: pop-in 0.3s forwards; }
 
 /* Bodempaneel & Knoppen */
-.bottom-panel { position: absolute; bottom: 0; width: 100%; max-width: 400px; box-sizing: border-box; background-color: rgba(255, 255, 255, 0.98); padding: 15px 20px; text-align: center; border-top: 1px solid #eee; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 10; }
+.bottom-panel { position: absolute; bottom: 0; width: 100%; box-sizing: border-box; background-color: rgba(255, 255, 255, 0.98); padding: 15px 20px; text-align: center; border-top: 1px solid #eee; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 10; }
 .bottom-panel h3 { margin: 0 0 10px 0; color: #333; font-weight: 500; font-size: 1rem; }
 .bottom-panel p { margin: 0; color: var(--tekst-grijs); font-size: 0.85rem; }
 
