@@ -481,26 +481,32 @@ const rondGeselecteerdeAf = () => {
   --tekst-grijs: #7f8c8d;
 }
 
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #e8f0eb;
+/* De html en body worden VOLLEDIG vastgepind aan het scherm */
+html, body {
   margin: 0;
   padding: 0;
+  height: 100%;
+  overflow: hidden; /* Cruciaal: voorkomt dat de HELE browserpagina kan scrollen of bouncen */
+  overscroll-behavior-y: none;
+  background-color: #e8f0eb;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
   display: flex;
   justify-content: center;
-  overscroll-behavior-y: none; 
 }
 
 .app-container {
   width: 100%;
   max-width: 400px;
   background-color: var(--achtergrond);
-  height: 100dvh; 
+  height: 100dvh; /* Pakt exact de schermhoogte inclusief interface-balken */
   display: flex;
   flex-direction: column;
   position: relative;
   box-shadow: 0 0 20px rgba(0,0,0,0.1);
-  overflow-x: hidden;
+  overflow: hidden; /* Blokkeert uitschieters */
 }
 
 .app-header, .hoofd-menu {
@@ -529,19 +535,27 @@ body {
   flex: 1; 
   display: flex;
   flex-direction: column;
-  width: 100%; /* Strikte breedte */
+  width: 100%; 
+  position: relative;
 }
 
 .home-layout {
   padding: 15px;
-  overflow: hidden; 
-  width: 100%; /* Strikte breedte */
+  overflow: hidden; /* Home scherm mag NOOIT scrollen */
+  width: 100%; 
 }
 .scroll-layout {
   padding: 20px 15px 180px 15px;
-  overflow-y: auto; 
-  overflow-x: hidden; /* Blokkeer horizontaal scrollen */
-  width: 100%; /* Strikte breedte */
+  overflow-y: auto; /* Alleen deze container mag scrollen */
+  overflow-x: hidden; 
+  width: 100%; 
+  -webkit-overflow-scrolling: touch; /* Voor extreem soepel scrollen op iPhones */
+}
+
+/* Verbergt de browser-scrollbalk voor een strakke, app-achtige ervaring zonder verspringingen */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
 }
 
 /* COMPACTERE HOME SCHERM LAYOUT */
@@ -549,7 +563,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: 100%; /* Strikte breedte */
+  width: 100%; 
   justify-content: space-evenly; 
   gap: 6px; 
 }
