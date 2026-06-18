@@ -5,6 +5,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, doc, setDoc, getDoc } from "firebase/firestore";
 
+// 👇 VUL HIER JOUW FIREBASE GEGEVENS IN 👇
 const firebaseConfig = {
   apiKey: "AIzaSyClVxQVctw6f-ba2GPPJ8rGO12M0V3zrgI",
   authDomain: "mallorca-62149.firebaseapp.com",
@@ -293,11 +294,9 @@ const rondGeselecteerdeAf = () => {
       <button :class="{ 'menu-actief': huidigScherm === 'gids' }" @click="huidigScherm = 'gids'">🏖️ Gids</button>
     </nav>
 
-    <!-- Dynamische CSS class op basis van het huidige scherm -->
     <div class="content-gebied" :class="huidigScherm === 'home' ? 'home-layout' : 'scroll-layout'">
       <transition name="fade" mode="out-in">
         
-        <!-- HOME SCHERM (Volledig beeldvullend zonder scroll) -->
         <div v-if="huidigScherm === 'home'" class="home-scherm">
           <h2 class="welkom-titel">Welkom Weiner dogs!</h2>
           
@@ -346,7 +345,6 @@ const rondGeselecteerdeAf = () => {
             </div>
           </div>
 
-          <!-- NIEUW: Praktische Info Blokje -->
           <div class="praktische-info-kaart">
             <h3>ℹ️ Praktische Info</h3>
             <div class="info-rij">
@@ -365,7 +363,6 @@ const rondGeselecteerdeAf = () => {
 
         </div>
 
-        <!-- PLANNER SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'planner'">
           <div v-if="laadtSchema" class="laad-scherm"><div class="spinner"></div><p>Schema laden...</p></div>
           <div v-else>
@@ -392,7 +389,6 @@ const rondGeselecteerdeAf = () => {
           </div>
         </div>
 
-        <!-- GIDS SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'gids'">
           <h2 class="hoofd-titel-gids">Lokale gids</h2>
           <div v-if="laadtGids" class="laad-scherm"><div class="spinner"></div><p>Gids ophalen...</p></div>
@@ -417,7 +413,6 @@ const rondGeselecteerdeAf = () => {
       </transition>
     </div>
     
-    <!-- BOTTOM PANEL VOOR PLANNER -->
     <div class="bottom-panel" v-if="huidigScherm === 'planner' && !laadtSchema">
       <transition name="fade" mode="out-in">
         
@@ -470,6 +465,11 @@ const rondGeselecteerdeAf = () => {
 </template>
 
 <style>
+/* CSS RESET: Voorkomt verspringingen tussen tabs */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 :root {
   --teal-licht: #a0ceb9;
   --teal-donker: #7bb29e;
@@ -529,15 +529,19 @@ body {
   flex: 1; 
   display: flex;
   flex-direction: column;
+  width: 100%; /* Strikte breedte */
 }
 
 .home-layout {
   padding: 15px;
   overflow: hidden; 
+  width: 100%; /* Strikte breedte */
 }
 .scroll-layout {
   padding: 20px 15px 180px 15px;
   overflow-y: auto; 
+  overflow-x: hidden; /* Blokkeer horizontaal scrollen */
+  width: 100%; /* Strikte breedte */
 }
 
 /* COMPACTERE HOME SCHERM LAYOUT */
@@ -545,12 +549,13 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  width: 100%; /* Strikte breedte */
   justify-content: space-evenly; 
-  gap: 6px; /* Aangepast van 15px naar 6px voor perfecte pasvorm */
+  gap: 6px; 
 }
-.welkom-titel { margin-top: 0; margin-bottom: 0; color: var(--teal-donker); font-size: 1.15rem; text-align: center; } /* Iets kleiner */
+.welkom-titel { margin-top: 0; margin-bottom: 0; color: var(--teal-donker); font-size: 1.15rem; text-align: center; } 
 
-.compact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0; } /* Iets compactere grid */
+.compact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0; } 
 .compact-kaart { border-radius: 8px; padding: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; }
 .compact-kaart h4 { margin: 0 0 6px 0; font-size: 0.85rem; font-weight: 600; }
 .aftel-kaart { background-color: var(--teal-donker); color: white; }
