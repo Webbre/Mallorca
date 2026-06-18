@@ -101,13 +101,31 @@ const haalWeerOp = async () => {
 
     const resForecast = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Capdepera,es&units=metric&lang=nl&appid=${apiKey}`);
     const dataForecast = await resForecast.json();
+    
     if (dataForecast.list) {
       const middagVoorspellingen = dataForecast.list.filter((item: any) => item.dt_txt.includes('12:00:00'));
+      
+      const vandaag = new Date();
+      const morgen = new Date(vandaag);
+      morgen.setDate(morgen.getDate() + 1);
+
+      const isZelfdeDag = (d1: Date, d2: Date) => d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth();
+
       voorspelling.value = middagVoorspellingen.slice(0, 5).map((item: any) => {
         const datum = new Date(item.dt * 1000);
-        const dagNaam = datum.toLocaleDateString('nl-NL', { weekday: 'long' });
+        let weergaveDag = '';
+        
+        if (isZelfdeDag(datum, vandaag)) {
+          weergaveDag = 'Vandaag';
+        } else if (isZelfdeDag(datum, morgen)) {
+          weergaveDag = 'Morgen';
+        } else {
+          const dagNaam = datum.toLocaleDateString('nl-NL', { weekday: 'long' });
+          weergaveDag = dagNaam.charAt(0).toUpperCase() + dagNaam.slice(1);
+        }
+
         return {
-          dag: dagNaam.charAt(0).toUpperCase() + dagNaam.slice(1), 
+          dag: weergaveDag, 
           temp: Math.round(item.main.temp),
           icoon: getIcoon(item.weather[0].icon),
           omschrijving: item.weather[0].description
@@ -320,7 +338,7 @@ const rondGeselecteerdeAf = () => {
             </div>
 
             <div class="compact-kaart actueel-weer-kaart">
-              <h4>Actueel Weer</h4>
+              <h4>Actueel weer</h4>
               <div class="weer-regel">
                 <span class="weer-locatie">Cala Ratjada</span>
                 <span class="weer-temp">{{ liveWeer.calaRatjada.icoon }} {{ liveWeer.calaRatjada.temp }}°C</span>
@@ -348,7 +366,7 @@ const rondGeselecteerdeAf = () => {
 
           <!-- Praktische Info Blokje -->
           <div class="praktische-info-kaart">
-            <h3>ℹ️ Praktische Info</h3>
+            <h3>ℹ️ Praktische info</h3>
             <div class="info-rij">
               <span class="info-label">Vlucht Heen:</span>
               <span class="info-waarde">FR7386 (12:50)</span>
@@ -363,7 +381,7 @@ const rondGeselecteerdeAf = () => {
             </div>
           </div>
 
-          <!-- NIEUW: Handige Spaanse Woordjes Blokje -->
+          <!-- Handige Spaanse Woordjes Blokje -->
           <div class="praktische-info-kaart">
             <h3>🇪🇸 Handige Spaanse woordjes</h3>
             <div class="info-rij">
@@ -525,7 +543,6 @@ html, body {
   overflow: hidden; 
 }
 
-/* Verbergt scrollbalken om breedte-verspringingen uit te sluiten */
 * {
   scrollbar-width: none;
 }
@@ -584,14 +601,13 @@ html, body {
   -webkit-overflow-scrolling: touch; 
 }
 
-/* FIX: HOME SCHERM COMPRESSIE MET VASTE STAPELING */
 .home-scherm {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* Verandert de uitrekking in een nette opstapeling vanaf de bovenkant */
-  gap: 12px; /* Zorgt voor een strakke, vaste ruimte tussen alle blokken */
-  padding-top: 10px; /* Geeft een klein beetje witruimte aan de bovenkant */
+  justify-content: flex-start; 
+  gap: 12px; 
+  padding-top: 10px; 
   min-height: 0; 
 }
 .welkom-titel { margin: 0; color: var(--teal-donker); font-size: 1.1rem; text-align: center; } 
@@ -620,7 +636,6 @@ html, body {
 .v-temp { font-weight: bold; color: var(--teal-donker); width: 40px; text-align: right; font-size: 0.8rem; }
 .v-desc { font-size: 0.7rem; color: var(--tekst-grijs); text-transform: capitalize; text-align: right; flex: 1; }
 
-/* De CSS voor zowel de Praktische Info als de Spaanse Woordjes */
 .praktische-info-kaart {
   background-color: white;
   border: 2px solid var(--teal-licht);
