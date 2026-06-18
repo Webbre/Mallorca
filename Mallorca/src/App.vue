@@ -5,7 +5,6 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, doc, setDoc, getDoc } from "firebase/firestore";
 
-// 👇 VUL HIER JOUW FIREBASE GEGEVENS IN 👇
 const firebaseConfig = {
   apiKey: "AIzaSyClVxQVctw6f-ba2GPPJ8rGO12M0V3zrgI",
   authDomain: "mallorca-62149.firebaseapp.com",
@@ -294,9 +293,11 @@ const rondGeselecteerdeAf = () => {
       <button :class="{ 'menu-actief': huidigScherm === 'gids' }" @click="huidigScherm = 'gids'">🏖️ Gids</button>
     </nav>
 
+    <!-- Dynamische CSS class op basis van het huidige scherm -->
     <div class="content-gebied" :class="huidigScherm === 'home' ? 'home-layout' : 'scroll-layout'">
       <transition name="fade" mode="out-in">
         
+        <!-- HOME SCHERM (Volledig beeldvullend zonder scroll) -->
         <div v-if="huidigScherm === 'home'" class="home-scherm">
           <h2 class="welkom-titel">Welkom Weiner dogs!</h2>
           
@@ -345,6 +346,7 @@ const rondGeselecteerdeAf = () => {
             </div>
           </div>
 
+          <!-- NIEUW: Praktische Info Blokje -->
           <div class="praktische-info-kaart">
             <h3>ℹ️ Praktische Info</h3>
             <div class="info-rij">
@@ -363,6 +365,7 @@ const rondGeselecteerdeAf = () => {
 
         </div>
 
+        <!-- PLANNER SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'planner'">
           <div v-if="laadtSchema" class="laad-scherm"><div class="spinner"></div><p>Schema laden...</p></div>
           <div v-else>
@@ -389,6 +392,7 @@ const rondGeselecteerdeAf = () => {
           </div>
         </div>
 
+        <!-- GIDS SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'gids'">
           <h2 class="hoofd-titel-gids">Lokale gids</h2>
           <div v-if="laadtGids" class="laad-scherm"><div class="spinner"></div><p>Gids ophalen...</p></div>
@@ -413,6 +417,7 @@ const rondGeselecteerdeAf = () => {
       </transition>
     </div>
     
+    <!-- BOTTOM PANEL VOOR PLANNER -->
     <div class="bottom-panel" v-if="huidigScherm === 'planner' && !laadtSchema">
       <transition name="fade" mode="out-in">
         
@@ -483,7 +488,6 @@ body {
   padding: 0;
   display: flex;
   justify-content: center;
-  /* Voorkomt het 'bouncen' of pull-to-refresh van de hele pagina op mobiel */
   overscroll-behavior-y: none; 
 }
 
@@ -491,7 +495,6 @@ body {
   width: 100%;
   max-width: 400px;
   background-color: var(--achtergrond);
-  /* 100dvh zorgt dat de dynamische adresbalk van Safari/Chrome perfect wordt meegerekend */
   height: 100dvh; 
   display: flex;
   flex-direction: column;
@@ -501,7 +504,7 @@ body {
 }
 
 .app-header, .hoofd-menu {
-  flex-shrink: 0; /* Zorgt dat menu en header nooit krimpen */
+  flex-shrink: 0; 
 }
 
 .app-header {
@@ -522,33 +525,33 @@ body {
 }
 .hoofd-menu button.menu-actief { color: var(--teal-donker); border-bottom: 3px solid var(--teal-donker); }
 
-/* Lay-out per schermtype */
 .content-gebied {
-  flex: 1; /* Content gebied vult exact de resterende ruimte */
+  flex: 1; 
   display: flex;
   flex-direction: column;
 }
 
 .home-layout {
   padding: 15px;
-  overflow: hidden; /* Zorgt ervoor dat scrollen geblokkeerd is als het scherm groot genoeg is */
+  overflow: hidden; 
 }
 .scroll-layout {
   padding: 20px 15px 180px 15px;
-  overflow-y: auto; /* Wel scrollen op andere pagina's */
+  overflow-y: auto; 
 }
 
-/* Home scherm specifiek */
+/* COMPACTERE HOME SCHERM LAYOUT */
 .home-scherm {
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: 15px; /* Vaste ruimte tussen de elementen, geen uittrekking meer! */
+  justify-content: space-evenly; 
+  gap: 6px; /* Aangepast van 15px naar 6px voor perfecte pasvorm */
 }
-.welkom-titel { margin-top: 0; margin-bottom: 0px; color: var(--teal-donker); font-size: 1.2rem; text-align: center; }
+.welkom-titel { margin-top: 0; margin-bottom: 0; color: var(--teal-donker); font-size: 1.15rem; text-align: center; } /* Iets kleiner */
 
-.compact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.compact-kaart { border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; }
+.compact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0; } /* Iets compactere grid */
+.compact-kaart { border-radius: 8px; padding: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; }
 .compact-kaart h4 { margin: 0 0 6px 0; font-size: 0.85rem; font-weight: 600; }
 .aftel-kaart { background-color: var(--teal-donker); color: white; }
 .compact-groot { font-size: 1.1rem; font-weight: bold; }
@@ -560,27 +563,28 @@ body {
 .weer-locatie { color: var(--tekst-grijs); font-weight: 500; }
 .weer-temp { font-weight: bold; }
 
-.voorspelling-kaart { background-color: white; border: 2px solid var(--teal-licht); border-radius: 8px; padding: 12px 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+/* COMPACTERE VOORSPELLING */
+.voorspelling-kaart { background-color: white; border: 2px solid var(--teal-licht); border-radius: 8px; padding: 10px 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 0; }
 .voorspelling-kaart h3 { margin: 0; color: var(--teal-donker); font-size: 1rem; }
-.voorspelling-sub { color: var(--tekst-grijs); font-size: 0.75rem; margin: 4px 0 10px 0; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-.voorspelling-lijst { display: flex; flex-direction: column; gap: 8px; }
-.voorspelling-rij { display: flex; align-items: center; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed #eee; }
+.voorspelling-sub { color: var(--tekst-grijs); font-size: 0.75rem; margin: 2px 0 6px 0; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+.voorspelling-lijst { display: flex; flex-direction: column; gap: 6px; }
+.voorspelling-rij { display: flex; align-items: center; justify-content: space-between; padding: 1px 0; border-bottom: 1px dashed #eee; }
 .voorspelling-rij:last-child { border-bottom: none; }
 .v-dag { font-weight: bold; color: #333; width: 80px; font-size: 0.85rem; }
 .v-icoon { font-size: 1.2rem; }
 .v-temp { font-weight: bold; color: var(--teal-donker); width: 40px; text-align: right; font-size: 0.85rem; }
 .v-desc { font-size: 0.7rem; color: var(--tekst-grijs); text-transform: capitalize; text-align: right; flex: 1; }
 
-/* NIEUW: Praktische Info Kaart */
+/* COMPACTERE PRAKTISCHE INFO */
 .praktische-info-kaart {
   background-color: white;
   border: 2px solid var(--teal-licht);
   border-radius: 8px;
-  padding: 15px;
+  padding: 10px 15px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 .praktische-info-kaart h3 {
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   color: var(--teal-donker);
   font-size: 1.05rem;
 }
