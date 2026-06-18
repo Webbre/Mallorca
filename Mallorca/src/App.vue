@@ -20,7 +20,7 @@ const db = getFirestore(app);
 
 const huidigScherm = ref('home'); 
 const toonVerplaatsMenu = ref(false);
-const toonNieuwMenu = ref(false); 
+const toonNieuwMenu = ref(false);
 
 // --- 1. AFTELKLOK LOGICA ---
 const dagenTeGaan = ref(0);
@@ -59,7 +59,7 @@ const startCountdown = () => {
   };
   
   updateTimer(); 
-  aftelTimer = setInterval(updateTimer, 1000); 
+  aftelTimer = setInterval(updateTimer, 1000);
 };
 
 // --- 2. LIVE WEER LOGICA ---
@@ -71,8 +71,7 @@ const liveWeer = ref({
 const voorspelling = ref<any[]>([]);
 
 const haalWeerOp = async () => {
-  const apiKey = '26a57f31f3ae779576631ba7e3ac4894'; 
-
+  const apiKey = '26a57f31f3ae779576631ba7e3ac4894';
   const getIcoon = (iconCode: string) => {
     const map: Record<string, string> = {
       '01d': '☀️', '01n': '🌙', '02d': '⛅', '02n': '☁️',
@@ -103,7 +102,6 @@ const haalWeerOp = async () => {
 
     const resForecast = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=Capdepera,es&units=metric&lang=nl&appid=${apiKey}`);
     const dataForecast = await resForecast.json();
-    
     if (dataForecast.list) {
       const middagVoorspellingen = dataForecast.list.filter((item: any) => item.dt_txt.includes('12:00:00'));
       voorspelling.value = middagVoorspellingen.slice(0, 5).map((item: any) => {
@@ -124,7 +122,6 @@ const heeftSlechtWeerWaarschuwing = (omschrijving: string) => {
   const huidigWeer = liveWeer.value.calaRatjada.conditie.toLowerCase();
   const slechteCondities = ['regen', 'rain', 'onweer', 'storm', 'thunder', 'bui'];
   const isSlechtWeer = slechteCondities.some(w => huidigWeer.includes(w));
-
   const buitenActiviteiten = ['strand', 'zwembad', 'zee', 'snorkelen', 'fietsen', 'duik', 'kustpad'];
   const isBuiten = buitenActiviteiten.some(b => omschrijving.toLowerCase().includes(b));
 
@@ -134,12 +131,8 @@ const heeftSlechtWeerWaarschuwing = (omschrijving: string) => {
 // --- 3 & 4. FIREBASE SYNCHRONISATIE (GIDS & DAGSCHEMA) ---
 const gidsItems = ref<any[]>([]);
 const laadtGids = ref(true);
-
 const dagschema = ref<any[]>([]);
 const laadtSchema = ref(true);
-
-const gedeeldeNotitie = ref('');
-const isAanHetOpslaan = ref(false);
 
 const standaardGids = [
   { id: 1, categorie: 'Strand & snorkelen', naam: 'Cala Gat', reistijd: '5 min lopen', eigenschap: 'Klein, rustig, geweldig om te snorkelen', icoon: '🤿' },
@@ -178,27 +171,8 @@ const slaSchemaLiveOp = async () => {
   } catch (error) { console.error("Fout bij opslaan schema:", error); }
 };
 
-const slaNotitieOp = async () => {
-  isAanHetOpslaan.value = true;
-  try {
-    await setDoc(doc(db, "appData", "prikbord"), { tekst: gedeeldeNotitie.value });
-  } catch (error) {
-    console.error("Fout bij opslaan notitie:", error);
-  } finally {
-    setTimeout(() => { isAanHetOpslaan.value = false; }, 600);
-  }
-};
-
 const haalDataOp = async () => {
   try {
-    const notitieDoc = await getDoc(doc(db, "appData", "prikbord"));
-    if (notitieDoc.exists()) {
-      gedeeldeNotitie.value = notitieDoc.data().tekst;
-    } else {
-      await setDoc(doc(db, "appData", "prikbord"), { tekst: "" });
-      gedeeldeNotitie.value = "";
-    }
-
     const gidsDoc = await getDoc(doc(db, "appData", "gidsData"));
     if (gidsDoc.exists()) {
       gidsItems.value = gidsDoc.data().lijst;
@@ -320,11 +294,9 @@ const rondGeselecteerdeAf = () => {
       <button :class="{ 'menu-actief': huidigScherm === 'gids' }" @click="huidigScherm = 'gids'">🏖️ Gids</button>
     </nav>
 
-    <!-- Dynamische CSS class op basis van het huidige scherm -->
     <div class="content-gebied" :class="huidigScherm === 'home' ? 'home-layout' : 'scroll-layout'">
       <transition name="fade" mode="out-in">
         
-        <!-- HOME SCHERM (Volledig beeldvullend zonder scroll) -->
         <div v-if="huidigScherm === 'home'" class="home-scherm">
           <h2 class="welkom-titel">Welkom Weiner dogs!</h2>
           
@@ -372,26 +344,8 @@ const rondGeselecteerdeAf = () => {
               <div v-if="voorspelling.length === 0" class="voorspelling-laden">Voorspelling laden...</div>
             </div>
           </div>
-
-          <div class="prikbord-kaart">
-            <h3 class="prikbord-titel">📌 Familie Prikbord</h3>
-            <textarea 
-              v-model="gedeeldeNotitie" 
-              class="prikbord-tekstvak" 
-              placeholder="Schrijf hier een berichtje voor de rest van de familie..."
-            ></textarea>
-            <button 
-              @click="slaNotitieOp" 
-              class="prikbord-opslaan-knop" 
-              :class="{ 'knop-actief': isAanHetOpslaan }"
-              :disabled="isAanHetOpslaan"
-            >
-              {{ isAanHetOpslaan ? '⏳ Opslaan...' : '💾 Opslaan voor iedereen' }}
-            </button>
-          </div>
         </div>
 
-        <!-- PLANNER SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'planner'">
           <div v-if="laadtSchema" class="laad-scherm"><div class="spinner"></div><p>Schema laden...</p></div>
           <div v-else>
@@ -418,7 +372,6 @@ const rondGeselecteerdeAf = () => {
           </div>
         </div>
 
-        <!-- GIDS SCHERM (Scrollen mogelijk) -->
         <div v-else-if="huidigScherm === 'gids'">
           <h2 class="hoofd-titel-gids">Lokale gids</h2>
           <div v-if="laadtGids" class="laad-scherm"><div class="spinner"></div><p>Gids ophalen...</p></div>
@@ -443,7 +396,6 @@ const rondGeselecteerdeAf = () => {
       </transition>
     </div>
     
-    <!-- BOTTOM PANEL VOOR PLANNER -->
     <div class="bottom-panel" v-if="huidigScherm === 'planner' && !laadtSchema">
       <transition name="fade" mode="out-in">
         
@@ -514,16 +466,25 @@ body {
   padding: 0;
   display: flex;
   justify-content: center;
+  /* Voorkomt het 'bouncen' of pull-to-refresh van de hele pagina op mobiel */
+  overscroll-behavior-y: none; 
 }
 
 .app-container {
   width: 100%;
   max-width: 400px;
   background-color: var(--achtergrond);
-  min-height: 100vh;
+  /* 100dvh zorgt dat de dynamische adresbalk van Safari/Chrome perfect wordt meegerekend */
+  height: 100dvh; 
+  display: flex;
+  flex-direction: column;
   position: relative;
   box-shadow: 0 0 20px rgba(0,0,0,0.1);
   overflow-x: hidden;
+}
+
+.app-header, .hoofd-menu {
+  flex-shrink: 0; /* Zorgt dat menu en header nooit krimpen */
 }
 
 .app-header {
@@ -545,16 +506,19 @@ body {
 .hoofd-menu button.menu-actief { color: var(--teal-donker); border-bottom: 3px solid var(--teal-donker); }
 
 /* NIEUW: Lay-out per schermtype */
-.home-layout {
-  height: calc(100vh - 120px); 
-  padding: 15px;
+.content-gebied {
+  flex: 1; /* Content gebied vult exact de resterende ruimte */
   display: flex;
   flex-direction: column;
-  overflow: hidden; 
+}
+
+.home-layout {
+  padding: 15px;
+  overflow: hidden; /* Nooit scrollen op het home scherm */
 }
 .scroll-layout {
   padding: 20px 15px 180px 15px;
-  overflow-y: auto;
+  overflow-y: auto; /* Wel scrollen op andere pagina's */
 }
 
 /* Home scherm specifiek */
@@ -562,7 +526,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  justify-content: space-between;
+  justify-content: space-evenly; /* Verdeelt de elementen perfect elastisch over het scherm */
 }
 .welkom-titel { margin-top: 0; margin-bottom: 10px; color: var(--teal-donker); font-size: 1.2rem; text-align: center; }
 
@@ -590,14 +554,6 @@ body {
 .v-temp { font-weight: bold; color: var(--teal-donker); width: 40px; text-align: right; font-size: 0.85rem; }
 .v-desc { font-size: 0.7rem; color: var(--tekst-grijs); text-transform: capitalize; text-align: right; flex: 1; }
 
-.prikbord-kaart { background-color: #fff9c4; border: 1px solid #f0e68c; border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; flex: 1; margin-top: 0; }
-.prikbord-titel { margin: 0 0 8px 0; color: #d35400; font-size: 1rem; }
-.prikbord-tekstvak { flex: 1; width: 100%; box-sizing: border-box; background: transparent; border: 1px dashed #e5c100; border-radius: 4px; padding: 10px; font-family: inherit; font-size: 0.9rem; color: #333; resize: none; margin-bottom: 10px; }
-.prikbord-tekstvak:focus { outline: none; border-color: #d35400; background-color: #fffbe6; }
-.prikbord-opslaan-knop { background-color: #f39c12; color: white; border: none; border-radius: 6px; padding: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
-.prikbord-opslaan-knop:active { transform: scale(0.98); }
-.knop-actief { background-color: #e67e22; opacity: 0.8; cursor: not-allowed; }
-
 /* Planner */
 .dag-titel { font-size: 1.1rem; color: var(--teal-donker); margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 .activiteiten-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 30px; position: relative; }
@@ -620,7 +576,7 @@ body {
 .vinkje { position: absolute; top: -8px; right: -8px; background-color: var(--oranje-vinkje); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-weight: bold; animation: pop-in 0.3s forwards; }
 
 /* Bodempaneel & Knoppen */
-.bottom-panel { position: fixed; bottom: 0; width: 100%; max-width: 400px; box-sizing: border-box; background-color: rgba(255, 255, 255, 0.98); padding: 15px 20px; text-align: center; border-top: 1px solid #eee; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 10; }
+.bottom-panel { position: absolute; bottom: 0; width: 100%; box-sizing: border-box; background-color: rgba(255, 255, 255, 0.98); padding: 15px 20px; text-align: center; border-top: 1px solid #eee; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 10; }
 .bottom-panel h3 { margin: 0 0 10px 0; color: #333; font-weight: 500; font-size: 1rem; }
 .bottom-panel p { margin: 0; color: var(--tekst-grijs); font-size: 0.85rem; }
 
