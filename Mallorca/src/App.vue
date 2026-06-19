@@ -17,7 +17,48 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// --- NAVIGATIE & SWIPE LOGICA ---
 const huidigScherm = ref('home'); 
+const schermenVolgorde = ['home', 'planner', 'gids'];
+const transitieRichting = ref('slide-links');
+
+const veranderScherm = (nieuwScherm: string) => {
+  const oudIndex = schermenVolgorde.indexOf(huidigScherm.value);
+  const nieuwIndex = schermenVolgorde.indexOf(nieuwScherm);
+  
+  if (nieuwIndex > oudIndex) {
+    transitieRichting.value = 'slide-links';
+  } else if (nieuwIndex < oudIndex) {
+    transitieRichting.value = 'slide-rechts';
+  }
+  
+  huidigScherm.value = nieuwScherm;
+};
+
+const touchStartX = ref(0);
+const touchEndX = ref(0);
+const minSwipeAfstand = 50;
+
+const handleTouchStart = (e: TouchEvent) => {
+  touchStartX.value = e.changedTouches[0].screenX;
+};
+
+const handleTouchEnd = (e: TouchEvent) => {
+  touchEndX.value = e.changedTouches[0].screenX;
+  bepaalSwipe();
+};
+
+const bepaalSwipe = () => {
+  const swipeAfstand = touchEndX.value - touchStartX.value;
+  const huidigeIndex = schermenVolgorde.indexOf(huidigScherm.value);
+
+  if (swipeAfstand < -minSwipeAfstand && huidigeIndex < schermenVolgorde.length - 1) {
+    veranderScherm(schermenVolgorde[huidigeIndex + 1]);
+  } else if (swipeAfstand > minSwipeAfstand && huidigeIndex > 0) {
+    veranderScherm(schermenVolgorde[huidigeIndex - 1]);
+  }
+};
+
 const toonVerplaatsMenu = ref(false);
 const toonNieuwMenu = ref(false);
 
@@ -61,7 +102,7 @@ const startCountdown = () => {
   aftelTimer = setInterval(updateTimer, 1000);
 };
 
-// --- 2. LIVE WEER LOGICA (Inclusief Vandaag/Morgen) ---
+// --- 2. LIVE WEER LOGICA ---
 const liveWeer = ref({
   calaRatjada: { temp: '--', conditie: '', icoon: '⏳' },
   haren: { temp: '--', conditie: '', icoon: '⏳' }
@@ -192,10 +233,18 @@ const dagschema = ref<any[]>([]);
 const laadtSchema = ref(true);
 
 const standaardGids = [
-  { id: 1, categorie: 'Strand & snorkelen', naam: 'Cala Gat', reistijd: '5 min lopen', eigenschap: 'Klein, rustig, geweldig om te snorkelen', icoon: '🤿' },
-  { id: 2, categorie: 'Strand & snorkelen', naam: 'Cala Lliteras', reistijd: '10 min lopen', eigenschap: 'Kleine rotsbaai, prachtig water', icoon: '🐟' },
-  { id: 3, categorie: 'Strand & snorkelen', naam: 'Cala Mesquida', reistijd: '10 min auto', eigenschap: 'Groot zandstrand, mooie golven', icoon: '🌊' },
-  { id: 4, categorie: 'Eten & drinken', naam: 'Voorbeeld Restaurant', reistijd: '15 min', eigenschap: 'Lekkere tapas aan zee', icoon: '🥘' }
+  { id: 1, categorie: 'Stranden en baaitjes', naam: 'Cala Lliteras', reistijd: '10 min lopen', eigenschap: 'Een natuurlijke rotsbaai met kristalhelder water, dé plek om de onderwaterwereld te ontdekken.', icoon: '🐟' },
+  { id: 2, categorie: 'Stranden en baaitjes', naam: 'Cala Gat', reistijd: '5 min auto (30 min lopen)', eigenschap: 'Idyllisch baaitje met prachtig turquoise water om perfect te snorkelen en zwemmen.', icoon: '🤿' },
+  { id: 3, categorie: 'Stranden en baaitjes', naam: 'Cala Mesquida', reistijd: '10 min auto', eigenschap: 'Schitterend weids zandstrand omringd door duinen met golven voor een actieve zwemsessie.', icoon: '🌊' },
+  { id: 4, categorie: 'Stranden en baaitjes', naam: 'Cala Torta', reistijd: '25 min auto', eigenschap: 'Afgelegen ongerepte baai in ruig natuurgebied voor het ultieme avontuurlijke ontsnap-gevoel.', icoon: '🏖️' },
+  { id: 5, categorie: 'Actief & sport', naam: 'Padel Finca Mallorca', reistijd: '5 min auto', eigenschap: 'Prachtig gelegen padelbaan in de natuur voor fanatieke competitie onder de zon.', icoon: '🎾' },
+  { id: 6, categorie: 'Actief & sport', naam: 'Hike naar Talaia de Son Jaumell', reistijd: '10 min lopen (start)', eigenschap: 'Pittige wandeling naar een oude uitkijktoren, beloond met een waanzinnig panoramisch uitzicht.', icoon: '🥾' },
+  { id: 7, categorie: 'Actief & sport', naam: 'Kustwandeling naar Far de Capdepera', reistijd: '25 min lopen', eigenschap: 'Toegankelijke wandeling naar de vuurtoren met fantastische zeegezichten.', icoon: '🗼' },
+  { id: 8, categorie: 'Actief & sport', naam: 'Castell de Capdepera', reistijd: '10 min auto (35 min wandelen)', eigenschap: 'Mooie route naar een 14e-eeuwse vesting, perfect om cultuur te snuiven en voor toffe foto\'s.', icoon: '🏰' },
+  { id: 9, categorie: 'Eten & drinken', naam: 'Euforia Tapas', reistijd: '5 min auto (20 min lopen)', eigenschap: 'Bruisende locatie aan zee voor de zonsondergang, innovatieve tapas en goede (mock)cocktails.', icoon: '🍹' },
+  { id: 10, categorie: 'Eten & drinken', naam: 'Xiringuito', reistijd: '5 min auto', eigenschap: 'Uniek restaurant gebouwd op de rotsen voor verse paella; voelt als een boot op de oceaan.', icoon: '🥘' },
+  { id: 11, categorie: 'Eten & drinken', naam: 'The Roof - Träumeria Son Moll', reistijd: '5 min auto', eigenschap: 'Spectaculaire sky lounge met zeezicht, voor een speciale avond met een hippe vibe.', icoon: '🍸' },
+  { id: 12, categorie: 'Handig om te weten', naam: 'Cuevas del Drach (Porto Cristo)', reistijd: '40 min auto', eigenschap: 'Indrukwekkend grottencomplex met ondergronds meer, top voor een koel en avontuurlijk uitstapje.', icoon: '🦇' }
 ];
 
 const standaardDagschema = [
@@ -231,7 +280,7 @@ const slaSchemaLiveOp = async () => {
 const haalDataOp = async () => {
   try {
     const gidsDoc = await getDoc(doc(db, "appData", "gidsData"));
-    if (gidsDoc.exists()) {
+    if (gidsDoc.exists() && gidsDoc.data().lijst.length >= standaardGids.length) {
       gidsItems.value = gidsDoc.data().lijst;
     } else {
       await setDoc(doc(db, "appData", "gidsData"), { lijst: standaardGids });
@@ -298,12 +347,23 @@ const heeftSelectie = computed(() => {
   return dagschema.value.some(dag => dag.activiteiten.some((act: any) => act.geselecteerd));
 });
 
+// FIX: Bevestigingsdialoog ingebouwd voor het verwijderen!
 const verwijderGeselecteerde = () => {
-  dagschema.value.forEach(dag => {
-    dag.activiteiten = dag.activiteiten.filter((act: any) => !act.geselecteerd);
-  });
-  slaSchemaLiveOp(); 
-  toonVerplaatsMenu.value = false; 
+  const isZeker = window.confirm("Weet je zeker dat je deze activiteit(en) definitief wilt verwijderen?");
+  
+  if (isZeker) {
+    dagschema.value.forEach(dag => {
+      dag.activiteiten = dag.activiteiten.filter((act: any) => !act.geselecteerd);
+    });
+    slaSchemaLiveOp(); 
+    toonVerplaatsMenu.value = false; 
+  } else {
+    // Haal voor de zekerheid de selectie-vinkjes weer weg als je op annuleren klikt
+    dagschema.value.forEach(dag => {
+      dag.activiteiten.forEach((act: any) => act.geselecteerd = false);
+    });
+    toonVerplaatsMenu.value = false;
+  }
 };
 
 const verplaatsGeselecteerdeNaar = (doelDagId: number) => {
@@ -347,15 +407,19 @@ const rondGeselecteerdeAf = () => {
     </header>
 
     <nav class="hoofd-menu">
-      <button :class="{ 'menu-actief': huidigScherm === 'home' }" @click="huidigScherm = 'home'">🏠 Home</button>
-      <button :class="{ 'menu-actief': huidigScherm === 'planner' }" @click="huidigScherm = 'planner'">📅 Planner</button>
-      <button :class="{ 'menu-actief': huidigScherm === 'gids' }" @click="huidigScherm = 'gids'">🏖️ Gids</button>
+      <button :class="{ 'menu-actief': huidigScherm === 'home' }" @click="veranderScherm('home')">🏠 Home</button>
+      <button :class="{ 'menu-actief': huidigScherm === 'planner' }" @click="veranderScherm('planner')">📅 Planner</button>
+      <button :class="{ 'menu-actief': huidigScherm === 'gids' }" @click="veranderScherm('gids')">🏖️ Gids</button>
     </nav>
 
-    <div class="content-gebied" :class="huidigScherm === 'home' ? 'home-layout' : 'scroll-layout'">
-      <transition name="fade" mode="out-in">
+    <div 
+      class="content-gebied" 
+      @touchstart="handleTouchStart"
+      @touchend="handleTouchEnd"
+    >
+      <transition :name="transitieRichting">
         
-        <div v-if="huidigScherm === 'home'" class="home-scherm">
+        <div v-if="huidigScherm === 'home'" class="home-scherm" key="home">
           <h2 class="welkom-titel">Welkom Weiner dogs!</h2>
           
           <div class="compact-grid">
@@ -429,7 +493,7 @@ const rondGeselecteerdeAf = () => {
 
         </div>
 
-        <div v-else-if="huidigScherm === 'planner'">
+        <div v-else-if="huidigScherm === 'planner'" class="scroll-layout" key="planner">
           <div v-if="laadtSchema" class="laad-scherm"><div class="spinner"></div><p>Schema laden...</p></div>
           <div v-else>
             <div v-for="dag in dagschema" :key="dag.id" class="dag-sectie">
@@ -455,7 +519,7 @@ const rondGeselecteerdeAf = () => {
           </div>
         </div>
 
-        <div v-else-if="huidigScherm === 'gids'">
+        <div v-else-if="huidigScherm === 'gids'" class="scroll-layout" key="gids">
           <h2 class="hoofd-titel-gids">Lokale gids</h2>
           <div v-if="laadtGids" class="laad-scherm"><div class="spinner"></div><p>Gids ophalen...</p></div>
           
@@ -600,41 +664,39 @@ html, body {
 
 .content-gebied {
   flex: 1; 
-  display: flex;
-  flex-direction: column;
   width: 100%; 
   position: relative;
   overflow: hidden;
 }
 
-.home-layout {
-  flex: 1;
-  padding: 8px 15px; 
-  display: flex;
-  flex-direction: column;
-  min-height: 0; 
-  width: 100%; 
-  overflow: hidden;
-}
-
-.scroll-layout {
-  flex: 1;
-  padding: 15px 15px 180px 15px;
-  overflow-y: auto; 
-  overflow-x: hidden; 
-  width: 100%; 
-  -webkit-overflow-scrolling: touch; 
-}
-
 .home-scherm {
-  flex: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--achtergrond);
   display: flex;
   flex-direction: column;
   justify-content: flex-start; 
   gap: 12px; 
-  padding-top: 10px; 
-  min-height: 0; 
+  padding: 10px 15px 8px 15px;
+  overflow: hidden;
 }
+
+.scroll-layout {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--achtergrond);
+  padding: 15px 15px 180px 15px;
+  overflow-y: auto; 
+  overflow-x: hidden; 
+  -webkit-overflow-scrolling: touch; 
+}
+
 .welkom-titel { margin: 0; color: var(--teal-donker); font-size: 1.1rem; text-align: left; } 
 
 .compact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0; } 
@@ -735,7 +797,7 @@ html, body {
 .annuleer-knop { width: 100%; padding: 10px; background: none; border: none; color: var(--tekst-grijs); text-decoration: underline; cursor: pointer; }
 
 /* Gids & Animaties */
-.hoofd-titel-gids { font-size: 1.4rem; color: var(--teal-donker); margin-bottom: 20px; text-align: center; }
+.hoofd-titel-gids { font-size: 1.4rem; color: var(--teal-donker); margin-bottom: 20px; text-align: left; }
 .categorie-sectie { margin-bottom: 30px; }
 .gids-categorie-titel { font-size: 1.1rem; color: #333; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--teal-licht); }
 
@@ -749,9 +811,20 @@ html, body {
 .spinner { border: 4px solid rgba(0,0,0,0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--teal-donker); animation: draai 1s linear infinite; margin: 0 auto 15px auto; }
 @keyframes draai { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.slide-links-enter-active, .slide-links-leave-active,
+.slide-rechts-enter-active, .slide-rechts-leave-active { 
+  transition: transform 0.25s ease-out; 
+}
+.slide-links-enter-from { transform: translateX(100%); }
+.slide-links-leave-to { transform: translateX(-100%); }
+
+.slide-rechts-enter-from { transform: translateX(-100%); }
+.slide-rechts-leave-to { transform: translateX(100%); }
+
 .lijst-enter-active, .lijst-leave-active { transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
 .lijst-enter-from, .lijst-leave-to { opacity: 0; transform: scale(0.8) translateY(20px); }
 .lijst-move { transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
+
+.fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>
